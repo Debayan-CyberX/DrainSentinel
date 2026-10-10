@@ -2,6 +2,14 @@ import { WeatherScenario } from '../types';
 
 export const WEATHER_SCENARIOS: WeatherScenario[] = [
   {
+    id: 'live_forecast',
+    name: '🌐 Live Mumbai Forecast (Open-Meteo)',
+    intensity: 'Real-Time API',
+    rainfallRateMmH: 0.2,
+    description: 'Real-time meteorological observations and precipitation curve from Open-Meteo.',
+    riskMultiplier: 1.0,
+  },
+  {
     id: 'dry',
     name: 'Dry Weather Baseline',
     intensity: '0 mm/h (Fair)',

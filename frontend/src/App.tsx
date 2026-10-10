@@ -17,6 +17,7 @@ import {
   fetchTasks,
   updateInspectionTask,
   createInspectionTask,
+  fetchLiveWeather,
 } from './services/api';
 
 import { Sidebar } from './components/layout/Sidebar';
@@ -79,14 +80,39 @@ export default function App() {
       .catch(() => setBackendStatus('offline'));
 
     loadBackendData(currentWeather.rainfallRateMmH);
+
+    // Real-time polling heartbeat (every 15s keeps map, reports, and tasks synchronised)
+    const intervalId = setInterval(() => {
+      loadBackendData(currentWeather.rainfallRateMmH);
+    }, 15000);
+
+    return () => clearInterval(intervalId);
   }, [loadBackendData, currentWeather.rainfallRateMmH]);
 
   // Handle weather scenario changes (triggers live risk recalculation on backend)
   const handleSelectWeather = useCallback(
     async (scenario: WeatherScenario) => {
-      setCurrentWeather(scenario);
+      let rainRate = scenario.rainfallRateMmH;
+      let updatedScenario = { ...scenario };
+
+      if (scenario.id === 'live_forecast') {
+        try {
+          const live = await fetchLiveWeather();
+          rainRate = live.current_rain_mm_h;
+          updatedScenario = {
+            ...scenario,
+            rainfallRateMmH: live.current_rain_mm_h,
+            intensity: `${live.current_temp_c}°C • ${live.current_rain_mm_h} mm/h`,
+            description: `Live: ${live.weather_condition} in Mumbai (Open-Meteo API).`,
+          };
+        } catch (e) {
+          console.error('Failed to fetch live weather:', e);
+        }
+      }
+
+      setCurrentWeather(updatedScenario);
       setIsLoading(true);
-      await loadBackendData(scenario.rainfallRateMmH);
+      await loadBackendData(rainRate);
     },
     [loadBackendData]
   );

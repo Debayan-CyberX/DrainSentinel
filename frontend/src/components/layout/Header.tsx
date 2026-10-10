@@ -75,9 +75,15 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Rainfall Simulator Toggle */}
         <div className="flex items-center gap-1.5">
-          <div className="hidden lg:flex items-center gap-1 px-2 py-1 rounded bg-sky-50 border border-sky-100 text-sky-800 text-[11px] font-semibold">
+          <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded bg-sky-50 border border-sky-100 text-sky-800 text-[11px] font-semibold">
             <CloudRain className="w-3.5 h-3.5 text-sky-600" />
-            <span>Monsoon Sim:</span>
+            <span>Weather:</span>
+            {currentWeather.id === 'live_forecast' && (
+              <span className="flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded font-mono font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                LIVE
+              </span>
+            )}
           </div>
 
           <div className="relative">

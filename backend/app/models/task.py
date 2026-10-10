@@ -45,16 +45,16 @@ class InspectionTaskUpdate(BaseModel):
 class InspectionTaskResponse(BaseModel):
     id: str
     drain_id: str
-    report_id: Optional[str]
+    report_id: Optional[str] = None
     title: str
     issue_description: str
     risk_score: int
     risk_category: str
     priority: PriorityLevel
     status: TaskStatus
-    assigned_crew: Optional[str]
+    assigned_crew: Optional[str] = None
     created_at: str
     updated_at: str
     due_date: str
-    notes: Optional[str]
-    verification_photo_url: Optional[str]
+    notes: Optional[str] = None
+    verification_photo_url: Optional[str] = None

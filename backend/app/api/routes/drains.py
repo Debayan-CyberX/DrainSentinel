@@ -1,9 +1,14 @@
-from fastapi import APIRouter, HTTPException, Query
+import uuid
+from datetime import datetime, timezone
+from fastapi import APIRouter, HTTPException, Query, status
 from typing import List, Optional
 from app.models.drain import Drain, DrainFilterParams
 from app.models.risk import RiskCategory
+from app.models.task import InspectionTaskResponse
+from app.models.intelligence import DrainIntelligence, DraftRecommendation
 from app.repositories.memory_store import store
 from app.services.risk_engine import calculate_risk
+from app.services.intelligence import generate_drain_intelligence
 
 router = APIRouter(prefix="/drains", tags=["Drains"])
 
@@ -58,3 +63,82 @@ def get_drain(drain_id: str) -> Drain:
             detail=f"Drain with ID '{drain_id}' not found in Mumbai drainage registry.",
         )
     return drain
+
+
+@router.get("/{drain_id}/intelligence", response_model=DrainIntelligence)
+def get_drain_intelligence(
+    drain_id: str,
+    api_key: Optional[str] = Query(None, description="Optional override Gemini API key"),
+) -> DrainIntelligence:
+    """
+    Generate AI-assisted incident intelligence for a specific storm drain.
+    Synthesizes multiple incident reports, explains mathematical risk score drivers,
+    identifies missing/conflicting data, and drafts an advisory inspection recommendation.
+    Guaranteed deterministic fallback if external AI is unavailable.
+    """
+    drain = store.get_drain(drain_id)
+    if not drain:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Drain asset '{drain_id}' not found in drainage registry.",
+        )
+    reports = store.list_reports(drain_id=drain_id)
+    return generate_drain_intelligence(drain=drain, reports=reports, api_key=api_key)
+
+
+@router.post(
+    "/{drain_id}/intelligence/approve",
+    response_model=InspectionTaskResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def approve_intelligence_recommendation(
+    drain_id: str,
+    recommendation: DraftRecommendation,
+) -> InspectionTaskResponse:
+    """
+    Human-in-the-loop operator approval action.
+    Converts an AI-drafted inspection recommendation into an official municipal work order.
+    Assigns the recommended crew and transitions drain status to 'Assigned'.
+    """
+    drain = store.get_drain(drain_id)
+    if not drain:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Drain asset '{drain_id}' not found in drainage registry.",
+        )
+
+    task_id = f"TSK-MUM-{uuid.uuid4().hex[:5].upper()}"
+    now_str = datetime.now(timezone.utc).isoformat()
+    risk_score = drain.risk_assessment.total_score if drain.risk_assessment else 75
+    risk_category = drain.risk_assessment.category if drain.risk_assessment else "High"
+
+    actions_summary = "; ".join(recommendation.recommended_actions[:2]) if recommendation.recommended_actions else "Inspect and clear obstruction."
+    equipment_summary = ", ".join(recommendation.equipment_needed[:3]) if recommendation.equipment_needed else "Standard de-silting gear"
+
+    reports = store.list_reports(drain_id=drain_id)
+    latest_report_id = reports[0].id if reports else None
+
+    new_task = InspectionTaskResponse(
+        id=task_id,
+        drain_id=drain.id,
+        report_id=latest_report_id,
+        title=f"AI-Approved Dispatch: {drain.name}",
+        issue_description=f"Operator-approved dispatch ({recommendation.urgency}). Planned actions: {actions_summary}. Equipment: {equipment_summary}.",
+        risk_score=risk_score,
+        risk_category=risk_category,
+        priority=recommendation.priority,
+        status="Assigned",
+        assigned_crew=recommendation.suggested_crew,
+        created_at=now_str,
+        updated_at=now_str,
+        due_date=now_str,
+        notes="Authorized by Municipal Operator from AI Incident Intelligence recommendation.",
+        verification_photo_url=None,
+    )
+
+    created_task = store.create_task(new_task)
+    drain.status = "Assigned"
+    store.update_drain(drain)
+
+    return created_task
+

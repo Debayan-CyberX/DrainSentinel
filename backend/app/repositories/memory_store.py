@@ -1,7 +1,7 @@
 import threading
 from typing import List, Optional, Dict
 from datetime import datetime, timezone
-from app.models.drain import Drain, DrainLocation, DrainTelemetry, DrainFilterParams
+from app.models.drain import Drain, DrainLocation, DrainTelemetry, DrainFilterParams, DrainageHistory
 from app.models.report import IncidentReportResponse, IncidentReportCreate
 from app.models.task import InspectionTaskResponse, InspectionTaskCreate, InspectionTaskUpdate, VALID_TRANSITIONS, TaskStatus
 from app.models.risk import RiskAssessment
@@ -512,6 +512,37 @@ class MemoryDataStore(IDrainRepository, IReportRepository, ITaskRepository):
                 hours_since_update=1.0,
             )
 
+            # Derive realistic historical drainage data for Mumbai hotspots
+            elev = item["elevation"]
+            silt = item["silt"]
+            is_chronic = item["id"] in (
+                "DS-MUM-101", "DS-MUM-102", "DS-MUM-103", "DS-MUM-104",
+                "DS-MUM-105", "DS-MUM-108", "DS-MUM-111", "DS-MUM-114"
+            )
+
+            if is_chronic:
+                flood_events = 14 if item["id"] in ("DS-MUM-101", "DS-MUM-102") else 9
+                vuln_idx = 0.96 if item["id"] == "DS-MUM-102" else (0.92 if item["id"] == "DS-MUM-101" else 0.84)
+                reason = "Natural topographic depression subject to reverse tidal backflow" if elev <= 6.0 else "Corridor bottleneck with high runoff velocity"
+                trend = "Escalating Vulnerability" if silt >= 80 else "Stable"
+                days_since = 155 if silt >= 80 else 85
+            else:
+                flood_events = 2 if elev < 9.0 else 0
+                vuln_idx = 0.40 if elev < 9.0 else 0.15
+                reason = "Nominal suburban drainage gradient"
+                trend = "Stable"
+                days_since = 45
+
+            history = DrainageHistory(
+                flood_events_past_3yr=flood_events,
+                chronic_vulnerability_index=vuln_idx,
+                last_desilted_date="2026-04-10" if days_since > 100 else "2026-07-20",
+                days_since_desilting=days_since,
+                historical_silt_accumulation_rate_cm_month=4.8 if is_chronic else 2.1,
+                trend=trend,
+                notable_flooding_hotspot_reason=reason,
+            )
+
             drain = Drain(
                 id=item["id"],
                 name=item["name"],
@@ -527,6 +558,7 @@ class MemoryDataStore(IDrainRepository, IReportRepository, ITaskRepository):
                 has_verified_report=False,
                 risk_assessment=assessment,
                 assigned_crew=item.get("crew"),
+                drainage_history=history,
             )
             self._drains[drain.id] = drain
 

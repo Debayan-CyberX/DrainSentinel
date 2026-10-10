@@ -1,4 +1,15 @@
-import { Drain, CitizenReport, InspectionTask, ReportCreate, TaskStatus } from '../types';
+import {
+  Drain,
+  CitizenReport,
+  InspectionTask,
+  ReportCreate,
+  TaskStatus,
+  DrainIntelligence,
+  DraftRecommendation,
+  WeatherForecastResponse,
+  CityWidePredictiveSummary,
+  DrainPrediction,
+} from '../types';
 
 export interface HealthStatus {
   status: string;
@@ -187,3 +198,77 @@ export async function updateInspectionTask(
   }
   return await response.json();
 }
+
+/**
+ * GET /api/v1/drains/{drain_id}/intelligence
+ */
+export async function fetchDrainIntelligence(drainId: string): Promise<DrainIntelligence> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/drains/${drainId}/intelligence`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: response.statusText }));
+    throw new Error(err.detail || 'Failed to fetch drain intelligence');
+  }
+  return await response.json();
+}
+
+/**
+ * POST /api/v1/drains/{drain_id}/intelligence/approve
+ */
+export async function approveIntelligenceRecommendation(
+  drainId: string,
+  recommendation: DraftRecommendation
+): Promise<InspectionTask> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/drains/${drainId}/intelligence/approve`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(recommendation),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: response.statusText }));
+    throw new Error(err.detail || 'Failed to approve recommendation');
+  }
+  return await response.json();
+}
+
+/**
+ * GET /api/v1/weather/live
+ */
+export async function fetchLiveWeather(refresh: boolean = false): Promise<WeatherForecastResponse> {
+  const url = `${API_BASE_URL}/api/v1/weather/live${refresh ? '?refresh=true' : ''}`;
+  const response = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error(`Failed to fetch live weather: ${response.statusText}`);
+  return await response.json();
+}
+
+/**
+ * GET /api/v1/weather/predictive-summary
+ */
+export async function fetchPredictiveSummary(
+  simulatedRainOverride?: number
+): Promise<CityWidePredictiveSummary> {
+  const query = new URLSearchParams();
+  if (simulatedRainOverride !== undefined && simulatedRainOverride >= 0) {
+    query.set('simulated_rain_override', simulatedRainOverride.toString());
+  }
+  const url = `${API_BASE_URL}/api/v1/weather/predictive-summary${query.toString() ? '?' + query.toString() : ''}`;
+  const response = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error(`Failed to fetch predictive summary: ${response.statusText}`);
+  return await response.json();
+}
+
+/**
+ * GET /api/v1/weather/drains/{drain_id}/prediction
+ */
+export async function fetchDrainPrediction(drainId: string): Promise<DrainPrediction> {
+  const url = `${API_BASE_URL}/api/v1/weather/drains/${drainId}/prediction`;
+  const response = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error(`Failed to fetch prediction for ${drainId}: ${response.statusText}`);
+  return await response.json();
+}
+
+
