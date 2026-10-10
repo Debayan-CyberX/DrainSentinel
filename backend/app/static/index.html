@@ -18,10 +18,16 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <script type="module" crossorigin src="/assets/index-VRYpd1on.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CoPZU4tJ.css">
+    <!-- Automatic HTTPS upgrade for S3 website traffic -->
+    <script>
+      if (location.protocol === 'http:' && location.hostname.includes('s3-website')) {
+        location.href = 'https://sw5pykycb7.execute-api.ap-south-1.amazonaws.com' + location.pathname + location.search;
+      }
+    </script>
+    <script type="module" crossorigin src="/assets/index-DKURzd8p.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BC9pg-Er.css">
   </head>
-  <body class="bg-[#2d3029] text-[#eef3e7] min-h-screen selection:bg-emerald-500/30 selection:text-white antialiased font-sans">
+  <body class="bg-[#383b34] text-[#eef3e7] min-h-screen selection:bg-emerald-500/30 selection:text-white antialiased font-sans">
     <div id="root"></div>
   </body>
 </html>

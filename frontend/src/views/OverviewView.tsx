@@ -57,8 +57,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Hero Viewport Spacer — reveals the persistent 3D world and iframe hero stage */}
-      <div className="w-full h-[calc(100vh-140px)] min-h-[560px] max-h-[820px] flex flex-col justify-end items-center pb-8 pointer-events-none">
+      {/* 3D Living Green Wallpaper Hero — reveals the full-page 3D world */}
+      <div className="w-full h-[calc(100vh-140px)] min-h-[580px] max-h-[820px] flex flex-col justify-end items-center pb-8 pointer-events-none">
         <button
           type="button"
           onClick={() => {

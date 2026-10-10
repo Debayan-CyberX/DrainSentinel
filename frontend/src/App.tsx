@@ -31,6 +31,7 @@ import { ReportsView } from './views/ReportsView';
 import { AnalyticsView } from './views/AnalyticsView';
 import { SettingsView } from './views/SettingsView';
 import { Scene as SylvaHeroScene } from './views/SylvaHeroScene';
+import { LivingNatureBackground } from './components/common/LivingNatureBackground';
 
 export default function App() {
   const [activePage, setActivePage] = useState<NavigationPage>('overview');
@@ -269,8 +270,8 @@ export default function App() {
   }, [reports]);
 
   return (
-    <div className="min-h-screen bg-[#242720]/40 text-[#eef3e7] font-sans antialiased relative selection:bg-emerald-500/30 selection:text-white">
-      {/* Persistent 3D Living Nature Wallpaper */}
+    <div className="min-h-screen text-[#eef3e7] font-sans antialiased relative selection:bg-emerald-500/30 selection:text-white">
+      {/* Persistent Full-Screen 3D Living Nature Wallpaper */}
       <div className="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
         <iframe
           ref={wallpaperIframeRef}
@@ -316,7 +317,6 @@ export default function App() {
                 currentWeather={currentWeather}
                 onNavigateToInspections={() => setActivePage('inspections')}
                 onOpenReportModal={() => openReportModalForDrain(null)}
-                onNavigateToSylva={() => setActivePage('sylva')}
               />
             )}
 
@@ -352,10 +352,6 @@ export default function App() {
 
             {activePage === 'settings' && (
               <SettingsView backendStatus={backendStatus} />
-            )}
-
-            {activePage === 'sylva' && (
-              <SylvaHeroScene />
             )}
           </div>
         </main>

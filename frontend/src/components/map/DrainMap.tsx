@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Drain, RiskCategory } from '../../types';
@@ -85,6 +85,8 @@ export const DrainMap: React.FC<DrainMapProps> = ({
   onSelectDrain,
   className = 'h-[480px]',
 }) => {
+  const [mapStyle, setMapStyle] = useState<'dark' | 'satellite' | 'streets'>('dark');
+
   // Center map around Mumbai coordinates (approx 19.05, 72.86)
   const defaultCenter: [number, number] = useMemo(() => {
     if (drains.length === 0) return [19.076, 72.8777];
@@ -103,13 +105,34 @@ export const DrainMap: React.FC<DrainMapProps> = ({
         center={defaultCenter}
         zoom={12}
         scrollWheelZoom={true}
-        className="w-full h-full z-0 bg-[#2d3029]"
+        className={`w-full h-full z-0 bg-[#1b1e18] ${mapStyle === 'dark' ? 'map-dark-mode' : ''}`}
       >
-        {/* CartoDB Dark Matter Tiles */}
-        <TileLayer
-          attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        />
+        {/* Free, Reliable Tile Layers with Zero API Key Requirements */}
+        {mapStyle === 'dark' && (
+          <TileLayer
+            key="osm-dark"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            className="dark-map-tiles"
+            maxZoom={19}
+          />
+        )}
+        {mapStyle === 'satellite' && (
+          <TileLayer
+            key="esri-satellite"
+            attribution='&copy; Esri &mdash; World Imagery'
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            maxZoom={19}
+          />
+        )}
+        {mapStyle === 'streets' && (
+          <TileLayer
+            key="osm-streets"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={19}
+          />
+        )}
 
         <MapFlyTo target={targetCoords} />
 
@@ -193,12 +216,50 @@ export const DrainMap: React.FC<DrainMapProps> = ({
         <MapLegend />
       </div>
 
-      {/* Ward Overlay Badge Top Right */}
-      <div className="absolute top-4 right-4 z-[400] bg-[#2d3029]/95 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-mono text-[#eef3e7] shadow-lg">
-        <Layers className="w-3.5 h-3.5 text-[#86efac]" />
-        <span className="text-[11px] text-[#d5dbc9] font-normal">
-          Active Assets: <b className="text-[#86efac]">{drains.length}</b>
-        </span>
+      {/* Top Right Controls: Layer Switcher & Active Assets Counter */}
+      <div className="absolute top-4 right-4 z-[400] flex items-center gap-2 pointer-events-auto">
+        <div className="bg-[#1b1e18]/90 backdrop-blur-md border border-white/10 p-1 rounded-full flex items-center gap-1 shadow-lg text-xs">
+          <button
+            type="button"
+            onClick={() => setMapStyle('dark')}
+            className={`px-2.5 py-1 rounded-full font-mono text-[10px] tracking-wider uppercase transition-all cursor-pointer ${
+              mapStyle === 'dark'
+                ? 'bg-[#86efac]/20 text-[#86efac] border border-[#86efac]/40 font-semibold'
+                : 'text-[#a4aca0] hover:text-white'
+            }`}
+          >
+            Dark
+          </button>
+          <button
+            type="button"
+            onClick={() => setMapStyle('satellite')}
+            className={`px-2.5 py-1 rounded-full font-mono text-[10px] tracking-wider uppercase transition-all cursor-pointer ${
+              mapStyle === 'satellite'
+                ? 'bg-[#86efac]/20 text-[#86efac] border border-[#86efac]/40 font-semibold'
+                : 'text-[#a4aca0] hover:text-white'
+            }`}
+          >
+            Satellite
+          </button>
+          <button
+            type="button"
+            onClick={() => setMapStyle('streets')}
+            className={`px-2.5 py-1 rounded-full font-mono text-[10px] tracking-wider uppercase transition-all cursor-pointer ${
+              mapStyle === 'streets'
+                ? 'bg-[#86efac]/20 text-[#86efac] border border-[#86efac]/40 font-semibold'
+                : 'text-[#a4aca0] hover:text-white'
+            }`}
+          >
+            Streets
+          </button>
+        </div>
+
+        <div className="bg-[#1b1e18]/90 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-mono text-[#eef3e7] shadow-lg">
+          <Layers className="w-3.5 h-3.5 text-[#86efac]" />
+          <span className="text-[11px] text-[#d5dbc9] font-normal">
+            Active Assets: <b className="text-[#86efac]">{drains.length}</b>
+          </span>
+        </div>
       </div>
     </div>
   );

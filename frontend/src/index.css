@@ -117,8 +117,14 @@ body {
 /* Leaflet Map Sylva Theme */
 .leaflet-container {
   font-family: 'Lexend', sans-serif;
-  background: #2d3029 !important;
+  background: #1b1e18 !important;
   z-index: 1;
+}
+
+/* Dark Natural Hydrology Theme for Map Tiles (Zero API Key, zero watermark, 100% reliable) */
+.dark-map-tiles,
+.map-dark-mode .leaflet-tile-pane {
+  filter: invert(100%) hue-rotate(180deg) brightness(88%) contrast(92%);
 }
 
 .custom-drain-marker {

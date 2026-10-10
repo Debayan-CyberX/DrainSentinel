@@ -56,7 +56,6 @@ export const Header: React.FC<HeaderProps> = ({
     },
     { id: 'analytics', label: 'Hydrology Ledger' },
     { id: 'settings', label: 'Settings' },
-    { id: 'sylva', label: 'Living 3D World', isSpecial: true },
   ];
 
   return (
@@ -94,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({
                   DrainSentinel
                 </span>
                 <span className="hidden md:inline-block text-[9px] font-mono tracking-wider text-[#86efac] bg-[#383b34]/90 border border-[#86efac]/30 px-2 py-0.5 rounded-full font-semibold">
-                  LIVING WATERS
+                  MUMBAI SWD
                 </span>
               </div>
               <span className="text-[10px] tracking-wider text-[#a4aca0] font-light hidden sm:block">
