@@ -70,6 +70,8 @@ if (STATIC_DIR / "assets").exists():
     app.mount("/assets", StaticFiles(directory=str(STATIC_DIR / "assets")), name="assets")
 if (STATIC_DIR / "landing-pages").exists():
     app.mount("/landing-pages", StaticFiles(directory=str(STATIC_DIR / "landing-pages")), name="landing-pages")
+if (STATIC_DIR / "images").exists():
+    app.mount("/images", StaticFiles(directory=str(STATIC_DIR / "images")), name="images")
 
 
 # Include API v1 routes
@@ -84,7 +86,7 @@ def read_root(request: Request):
     """Serves Web UI for browser and mobile clients, and JSON API index for pure API clients."""
     accept = request.headers.get("accept", "")
     index_file = STATIC_DIR / "index.html"
-    if index_file.exists() and not ("application/json" in accept and "text/html" not in accept):
+    if "text/html" in accept and index_file.exists():
         return FileResponse(str(index_file))
     return {
         "message": "Welcome to DrainSentinel API (Mumbai Storm-Drain Network)",

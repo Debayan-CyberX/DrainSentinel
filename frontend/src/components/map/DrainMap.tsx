@@ -30,9 +30,9 @@ const createCustomMarker = (category: RiskCategory | string = 'low', isSelected:
   const norm = category.toString().toLowerCase();
 
   const colors: Record<string, { fill: string; stroke: string; glow: string }> = {
-    low: { fill: '#4ade80', stroke: '#15803d', glow: 'rgba(74, 222, 128, 0.4)' },
-    medium: { fill: '#86efac', stroke: '#16a34a', glow: 'rgba(134, 239, 172, 0.5)' },
-    moderate: { fill: '#86efac', stroke: '#16a34a', glow: 'rgba(134, 239, 172, 0.5)' },
+    low: { fill: '#4ade80', stroke: '#15803d', glow: 'rgba(74, 222, 128, 0.45)' },
+    medium: { fill: '#38bdf8', stroke: '#0284c7', glow: 'rgba(56, 189, 248, 0.5)' },
+    moderate: { fill: '#38bdf8', stroke: '#0284c7', glow: 'rgba(56, 189, 248, 0.5)' },
     high: { fill: '#fbbf24', stroke: '#b45309', glow: 'rgba(251, 191, 36, 0.6)' },
     critical: { fill: '#f87171', stroke: '#b91c1c', glow: 'rgba(248, 113, 113, 0.8)' },
   };
@@ -138,8 +138,27 @@ export const DrainMap: React.FC<DrainMapProps> = ({
 
         {drains.map((drain) => {
           const isSelected = selectedDrain?.id === drain.id;
-          const cat = drain.riskCategory || drain.risk_assessment?.category || 'Low';
-          const icon = createCustomMarker(cat, isSelected);
+          const silt = drain.siltLevelPercent ?? drain.telemetry?.silt_level_percent ?? 0;
+          const score = drain.riskScore ?? drain.risk_assessment?.total_score ?? 0;
+          const rawCat = (drain.riskCategory || drain.risk_assessment?.category || '').toString().toLowerCase();
+
+          // Match municipal triage protocol & MapLegend:
+          // Critical (>=85% silt or score>=80) -> Red
+          // High (70-84% silt or score>=60) -> Amber
+          // Moderate (40-69% silt or score>=35) -> Cyan
+          // Low (<40% silt or score<35) -> Emerald Green
+          let effectiveCat: RiskCategory = 'Low';
+          if (rawCat === 'critical' || score >= 80 || silt >= 85) {
+            effectiveCat = 'Critical';
+          } else if (rawCat === 'high' || score >= 60 || silt >= 70) {
+            effectiveCat = 'High';
+          } else if (rawCat === 'medium' || rawCat === 'moderate' || score >= 35 || silt >= 40) {
+            effectiveCat = 'Medium';
+          } else {
+            effectiveCat = 'Low';
+          }
+
+          const icon = createCustomMarker(effectiveCat, isSelected);
 
           return (
             <Marker
@@ -156,7 +175,7 @@ export const DrainMap: React.FC<DrainMapProps> = ({
                     <span className="font-mono text-xs text-white font-medium">
                       {drain.id}
                     </span>
-                    <RiskBadge category={cat} score={drain.riskScore} size="sm" />
+                    <RiskBadge category={effectiveCat} score={drain.riskScore} size="sm" />
                   </div>
 
                   <div>

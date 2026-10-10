@@ -13,6 +13,7 @@ export const INITIAL_REPORTS: CitizenReport[] = [
     reporter_name: 'Amitabh S. (Commuter)',
     issue_type: 'Silt Accumulation',
     description: 'Dense black silt and construction slurry filling the culvert chamber after overnight road resurfacing.',
+    photo_url: '/images/drain-evidence-placeholder.jpg',
     severity: 'critical',
     created_at: '2026-10-10T06:15:00Z',
     status: 'triaged',

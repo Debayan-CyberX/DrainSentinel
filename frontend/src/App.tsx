@@ -30,11 +30,23 @@ import { InspectionsView } from './views/InspectionsView';
 import { ReportsView } from './views/ReportsView';
 import { AnalyticsView } from './views/AnalyticsView';
 import { SettingsView } from './views/SettingsView';
+import { LoginView } from './views/LoginView';
 import { Scene as SylvaHeroScene } from './views/SylvaHeroScene';
 import { LivingNatureBackground } from './components/common/LivingNatureBackground';
 
 export default function App() {
-  const [activePage, setActivePage] = useState<NavigationPage>('overview');
+  const getInitialPage = (): NavigationPage => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase();
+      const params = new URLSearchParams(window.location.search);
+      if (hash === '#login' || params.get('page') === 'login' || params.get('view') === 'login') {
+        return 'login';
+      }
+    }
+    return 'overview';
+  };
+
+  const [activePage, setActivePage] = useState<NavigationPage>(getInitialPage);
 
   // Live Backend Data States
   const [drains, setDrains] = useState<Drain[]>([]);
@@ -142,6 +154,20 @@ export default function App() {
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  // Listen for hash navigation changes (e.g., #login, #overview)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#login') {
+        setActivePage('login');
+      } else if (hash === '#overview' || hash === '' || hash === '#/') {
+        setActivePage('overview');
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
   // Handle weather scenario changes (triggers live risk recalculation on backend)
@@ -352,6 +378,13 @@ export default function App() {
 
             {activePage === 'settings' && (
               <SettingsView backendStatus={backendStatus} />
+            )}
+
+            {activePage === 'login' && (
+              <LoginView
+                onNavigate={setActivePage}
+                onLoginSuccess={() => setActivePage('overview')}
+              />
             )}
           </div>
         </main>

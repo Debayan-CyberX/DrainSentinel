@@ -572,7 +572,7 @@ class MemoryDataStore(IDrainRepository, IReportRepository, ITaskRepository, IAud
                 issue_type="Silt Accumulation",
                 severity="critical",
                 description="Dense black silt and construction slurry filling the culvert chamber after overnight road resurfacing.",
-                photo_url="https://images.unsplash.com/photo-1541888946425-d0fbb1861593?auto=format&fit=crop&w=400&q=80",
+                photo_url="/images/drain-evidence-placeholder.jpg",
                 reporter_name="Amitabh S. (Commuter)",
                 status="triaged",
                 is_citizen=True,

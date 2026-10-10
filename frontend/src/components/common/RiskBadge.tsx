@@ -14,6 +14,20 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({
 }) => {
   const norm = (category || 'low').toString().toLowerCase();
 
+  // Understated, professional status indicator for "High Risk"
+  if (norm === 'high' || norm === 'high risk' || norm === 'high_risk') {
+    const textSize = size === 'sm' ? 'text-[11px]' : 'text-xs';
+    return (
+      <span className={`inline-flex items-center gap-1.5 font-normal text-rose-300/90 ${textSize}`}>
+        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 flex-shrink-0" />
+        <span>High Risk</span>
+        {score !== undefined && (
+          <span className="font-mono text-[10px] opacity-75 ml-0.5">[{score}]</span>
+        )}
+      </span>
+    );
+  }
+
   const config: Record<
     string,
     { label: string; bg: string; text: string; border: string; dot: string; shadow?: string }

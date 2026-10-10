@@ -114,12 +114,12 @@ def calculate_risk(
     total = weighted_blockage + weighted_rainfall + weighted_exposure + weighted_confidence + weighted_freshness
     total_score = int(round(max(0.0, min(100.0, total))))
 
-    # Risk Category mapping
-    if total_score >= 80:
+    # Risk Category mapping (calibrated with municipal SWD triage protocol)
+    if total_score >= 80 or norm_blockage >= 85.0:
         category: RiskCategory = "Critical"
-    elif total_score >= 60:
+    elif total_score >= 60 or norm_blockage >= 70.0:
         category = "High"
-    elif total_score >= 35:
+    elif total_score >= 35 or norm_blockage >= 40.0:
         category = "Medium"
     else:
         category = "Low"

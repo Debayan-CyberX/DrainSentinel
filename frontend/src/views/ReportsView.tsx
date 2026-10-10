@@ -152,7 +152,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
                     <div className="mt-3">
                       <div className="aspect-video w-full rounded-xl overflow-hidden border border-white/10 bg-[#242720] relative group">
                         <img
-                          src={report.photo_url}
+                          src={report.photo_url || '/images/drain-evidence-placeholder.jpg'}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            if (target.src !== '/images/drain-evidence-placeholder.jpg') {
+                              target.src = '/images/drain-evidence-placeholder.jpg';
+                            }
+                          }}
                           alt="Citizen evidence photo"
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />

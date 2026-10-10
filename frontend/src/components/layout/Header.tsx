@@ -8,6 +8,7 @@ import {
   Droplets,
   Menu,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 import { NavigationPage, WeatherScenario } from '../../types';
 import { WEATHER_SCENARIOS } from '../../data/weatherScenarios';
@@ -186,6 +187,20 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
+            {/* Officer Portal / Sign in */}
+            <button
+              onClick={() => onNavigate(activePage === 'login' ? 'overview' : 'login')}
+              className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs transition-all cursor-pointer border ${
+                activePage === 'login'
+                  ? 'bg-[#eef3e7] text-[#23261f] border-white font-medium shadow-[0_2px_12px_rgba(238,243,231,0.25)]'
+                  : 'bg-[#383b34]/80 text-[#d5dbc9] border-white/10 hover:border-[#86efac]/40 hover:text-white font-light'
+              }`}
+              title="Municipal Officer Portal"
+            >
+              <Lock className="w-3.5 h-3.5 text-[#86efac]" />
+              <span>{activePage === 'login' ? 'Console' : 'Sign in'}</span>
+            </button>
+
             {/* Primary Action Button: Liquid Metal Frosted Pill */}
             <button
               onClick={onOpenReportModal}
@@ -242,6 +257,24 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               );
             })}
+
+            {/* Mobile Login Item */}
+            <button
+              onClick={() => {
+                onNavigate(activePage === 'login' ? 'overview' : 'login');
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+                activePage === 'login'
+                  ? 'bg-[#eef3e7] text-[#23261f]'
+                  : 'text-[#d5dbc9] hover:bg-white/5'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Lock className="w-3.5 h-3.5 text-[#86efac]" />
+                <span>{activePage === 'login' ? 'Catchment Console' : 'Officer Sign In'}</span>
+              </div>
+            </button>
           </div>
         )}
       </header>

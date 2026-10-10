@@ -11,35 +11,42 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 }) => {
   const norm = (status || 'operational').toLowerCase().replace(/\s+/g, '_');
 
+  // Understated, professional status indicators for "Reported", "Assigned", and "Inspected"
+  if (norm === 'reported') {
+    const textSize = size === 'sm' ? 'text-[11px]' : 'text-xs';
+    return (
+      <span className={`inline-flex items-center gap-1.5 font-normal text-amber-300/90 ${textSize}`}>
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+        <span>Reported</span>
+      </span>
+    );
+  }
+
+  if (norm === 'assigned') {
+    const textSize = size === 'sm' ? 'text-[11px]' : 'text-xs';
+    return (
+      <span className={`inline-flex items-center gap-1.5 font-normal text-sky-300/90 ${textSize}`}>
+        <span className="w-1.5 h-1.5 rounded-full bg-sky-400/80 flex-shrink-0" />
+        <span>Assigned</span>
+      </span>
+    );
+  }
+
+  if (norm === 'inspected') {
+    const textSize = size === 'sm' ? 'text-[11px]' : 'text-xs';
+    return (
+      <span className={`inline-flex items-center gap-1.5 font-normal text-teal-300/90 ${textSize}`}>
+        <span className="w-1.5 h-1.5 rounded-full bg-teal-400/80 flex-shrink-0" />
+        <span>Inspected</span>
+      </span>
+    );
+  }
+
   const config: Record<
     string,
     { label: string; bg: string; text: string; border: string }
   > = {
-    reported: {
-      label: 'Reported',
-      bg: 'bg-rose-500/15',
-      text: 'text-rose-300',
-      border: 'border-rose-500/30',
-    },
     risk_assessed: {
-      label: 'Risk Assessed',
-      bg: 'bg-amber-500/15',
-      text: 'text-amber-300',
-      border: 'border-amber-500/30',
-    },
-    assigned: {
-      label: 'Assigned',
-      bg: 'bg-sky-500/15',
-      text: 'text-sky-300',
-      border: 'border-sky-500/30',
-    },
-    inspected: {
-      label: 'Inspected',
-      bg: 'bg-cyan-500/15',
-      text: 'text-cyan-300',
-      border: 'border-cyan-500/30',
-    },
-    repair_in_progress: {
       label: 'Repairing',
       bg: 'bg-amber-500/15',
       text: 'text-amber-300',
