@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
   NavigationPage,
   Drain,
@@ -20,7 +20,6 @@ import {
   fetchLiveWeather,
 } from './services/api';
 
-import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { DrainDetailModal } from './components/drains/DrainDetailModal';
 import { ReportBlockageModal } from './components/reports/ReportBlockageModal';
@@ -31,10 +30,10 @@ import { InspectionsView } from './views/InspectionsView';
 import { ReportsView } from './views/ReportsView';
 import { AnalyticsView } from './views/AnalyticsView';
 import { SettingsView } from './views/SettingsView';
+import { Scene as SylvaHeroScene } from './views/SylvaHeroScene';
 
 export default function App() {
   const [activePage, setActivePage] = useState<NavigationPage>('overview');
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
 
   // Live Backend Data States
   const [drains, setDrains] = useState<Drain[]>([]);
@@ -88,6 +87,61 @@ export default function App() {
 
     return () => clearInterval(intervalId);
   }, [loadBackendData, currentWeather.rainfallRateMmH]);
+
+  const wallpaperIframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Synchronize active page with persistent 3D living wallpaper
+  useEffect(() => {
+    wallpaperIframeRef.current?.contentWindow?.postMessage({
+      type: 'SET_PAGE',
+      page: activePage,
+    }, '*');
+  }, [activePage]);
+
+  // Forward scroll and pointer movements for continuous interactive 3D camera & particle physics
+  useEffect(() => {
+    const handleScroll = () => {
+      wallpaperIframeRef.current?.contentWindow?.postMessage({
+        type: 'SCROLL',
+        scrollY: window.scrollY,
+      }, '*');
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      wallpaperIframeRef.current?.contentWindow?.postMessage({
+        type: 'POINTER_MOVE',
+        clientX: e.clientX,
+        clientY: e.clientY,
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+      }, '*');
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('pointermove', handlePointerMove);
+    };
+  }, []);
+
+  // Handle postMessage events from the 3D living world iframe
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === 'NAVIGATE' && e.data.page) {
+        setActivePage(e.data.page as NavigationPage);
+      } else if (e.data.type === 'OPEN_REPORT') {
+        openReportModalForDrain(null);
+      } else if (e.data.type === 'SCROLL_DOWN') {
+        const el = document.getElementById('telemetry-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   // Handle weather scenario changes (triggers live risk recalculation on backend)
   const handleSelectWeather = useCallback(
@@ -215,38 +269,44 @@ export default function App() {
   }, [reports]);
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] text-slate-800 font-sans antialiased overflow-hidden">
-      {/* Dark Navy Sidebar */}
-      <Sidebar
-        activePage={activePage}
-        onNavigate={setActivePage}
-        mobileOpen={mobileSidebarOpen}
-        onCloseMobile={() => setMobileSidebarOpen(false)}
-        openInspectionsCount={openInspectionsCount}
-        unreviewedReportsCount={unreviewedReportsCount}
-      />
-
-      {/* Main Workspace Area */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Header with BMC Ward & Monsoon Scenario */}
-        <Header
-          onToggleMobileMenu={() => setMobileSidebarOpen(true)}
-          selectedWard={selectedWard}
-          onSelectWard={setSelectedWard}
-          wards={wards}
-          currentWeather={currentWeather}
-          onSelectWeather={handleSelectWeather}
-          onOpenReportModal={() => openReportModalForDrain(null)}
+    <div className="min-h-screen bg-[#242720]/40 text-[#eef3e7] font-sans antialiased relative selection:bg-emerald-500/30 selection:text-white">
+      {/* Persistent 3D Living Nature Wallpaper */}
+      <div className="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
+        <iframe
+          ref={wallpaperIframeRef}
+          src="/landing-pages/inner-green-3d.html"
+          title="Living Waters 3D World"
+          className="w-full h-full border-0 block pointer-events-auto"
+          allow="autoplay; encrypted-media"
         />
+      </div>
 
-        {/* Loading Indicator */}
+      {/* Main Container */}
+      <div className="relative z-10 flex flex-col min-h-screen pointer-events-none">
+        {/* Sylva Living Green Floating Dock Top Bar */}
+        <div className="pointer-events-auto">
+          <Header
+            activePage={activePage}
+            onNavigate={setActivePage}
+            selectedWard={selectedWard}
+            onSelectWard={setSelectedWard}
+            wards={wards}
+            currentWeather={currentWeather}
+            onSelectWeather={handleSelectWeather}
+            onOpenReportModal={() => openReportModalForDrain(null)}
+            openInspectionsCount={openInspectionsCount}
+            unreviewedReportsCount={unreviewedReportsCount}
+          />
+        </div>
+
+        {/* Loading Indicator in Pale Lichen / Emerald */}
         {isLoading && (
-          <div className="h-0.5 bg-teal-600 animate-pulse w-full" />
+          <div className="h-[2px] bg-gradient-to-r from-[#86efac] via-[#4ade80] to-[#22c55e] shadow-[0_0_12px_#86efac] animate-pulse w-full sticky top-16 z-50 pointer-events-auto" />
         )}
 
-        {/* Scrollable Main Views */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto pb-12">
+        {/* Main Workspace Views */}
+        <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pointer-events-none">
+          <div className="pb-16 pointer-events-auto">
             {activePage === 'overview' && (
               <OverviewView
                 drains={activeDrains}
@@ -256,6 +316,7 @@ export default function App() {
                 currentWeather={currentWeather}
                 onNavigateToInspections={() => setActivePage('inspections')}
                 onOpenReportModal={() => openReportModalForDrain(null)}
+                onNavigateToSylva={() => setActivePage('sylva')}
               />
             )}
 
@@ -291,6 +352,10 @@ export default function App() {
 
             {activePage === 'settings' && (
               <SettingsView backendStatus={backendStatus} />
+            )}
+
+            {activePage === 'sylva' && (
+              <SylvaHeroScene />
             )}
           </div>
         </main>

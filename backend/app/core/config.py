@@ -15,8 +15,20 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
     ]
 
-    # Environment
+    # Environment & Storage Backend
     ENVIRONMENT: str = "development"
+    STORAGE_BACKEND: str = "memory"  # 'memory' for local dev/tests, 'dynamodb' for AWS
+
+    # AWS Cloud Services Configuration
+    AWS_REGION: str = "ap-south-1"
+    DYNAMODB_TABLE_DRAINS: str = "DrainSentinel-Drains"
+    DYNAMODB_TABLE_REPORTS: str = "DrainSentinel-Reports"
+    DYNAMODB_TABLE_TASKS: str = "DrainSentinel-Tasks"
+    DYNAMODB_TABLE_AUDIT: str = "DrainSentinel-Audit"
+    DYNAMODB_ENDPOINT_URL: Optional[str] = None  # For LocalStack / DynamoDB Local
+    S3_PHOTO_BUCKET: Optional[str] = None
+    S3_ENDPOINT_URL: Optional[str] = None
+    SNS_ALERT_TOPIC_ARN: Optional[str] = None
 
     # AI Intelligence Configuration (Optional Free Gemini API with deterministic fallback)
     GEMINI_API_KEY: Optional[str] = None

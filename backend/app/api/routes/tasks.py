@@ -10,6 +10,7 @@ from app.models.task import (
     TaskStatus,
 )
 from app.repositories.memory_store import store
+from app.services.notifications import notification_service
 
 router = APIRouter(prefix="/tasks", tags=["Inspection Tasks"])
 
@@ -112,5 +113,13 @@ def update_task_status(task_id: str, update_in: InspectionTaskUpdate) -> Inspect
     updated_task = store.update_task(task_id, update_in)
     if not updated_task:
         raise HTTPException(status_code=404, detail=f"Task '{task_id}' could not be updated.")
+
+    if update_in.status == "Assigned" or (update_in.assigned_crew and existing_task.status == "Assigned"):
+        notification_service.notify_emergency_task(
+            task_id=updated_task.id,
+            drain_id=updated_task.drain_id,
+            title=updated_task.title,
+            crew=updated_task.assigned_crew,
+        )
 
     return updated_task

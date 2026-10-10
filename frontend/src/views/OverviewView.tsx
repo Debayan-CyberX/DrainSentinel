@@ -5,6 +5,11 @@ import {
   ClipboardList,
   CheckCircle2,
   AlertTriangle,
+  CloudRain,
+  Radio,
+  Waves,
+  Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 import { Drain, ActivityLog, WeatherScenario } from '../types';
 import { MetricCard } from '../components/layout/MetricCard';
@@ -20,6 +25,7 @@ interface OverviewViewProps {
   currentWeather: WeatherScenario;
   onNavigateToInspections: () => void;
   onOpenReportModal: () => void;
+  onNavigateToSylva?: () => void;
 }
 
 export const OverviewView: React.FC<OverviewViewProps> = ({
@@ -30,6 +36,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   currentWeather,
   onNavigateToInspections,
   onOpenReportModal,
+  onNavigateToSylva,
 }) => {
   // Metrics calculation
   const totalMonitored = drains.length;
@@ -49,115 +56,132 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   }).length;
 
   return (
-    <div className="space-y-6">
-      {/* Monsoon Stress Notice Banner (if non-dry scenario is active) */}
-      {currentWeather.id !== 'dry' && (
-        <div className="p-3.5 rounded-xl bg-sky-50 border border-sky-200/90 flex items-center justify-between gap-3 text-xs text-sky-900 shadow-2xs">
-          <div className="flex items-center gap-2.5">
-            <span className="p-1 rounded-md bg-sky-100 text-sky-700 font-bold font-mono text-[11px]">
-              MONSOON SCENARIO
-            </span>
-            <span className="font-semibold text-sky-950">
-              {currentWeather.name} ({currentWeather.intensity})
-            </span>
-            <span className="text-sky-700 hidden sm:inline">
-              &bull; Runoff surcharge risk elevated across Mumbai lowlands (Hindmata, Milan Subway, Kurla).
-            </span>
-          </div>
-          <span className="text-[11px] font-mono font-semibold text-sky-800">
-            {currentWeather.rainfallRateMmH} mm/h
-          </span>
-        </div>
-      )}
-
-      {/* 4 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Monitored Drains"
-          value={totalMonitored}
-          subtitle="Mumbai acoustic & depth sensors"
-          icon={Droplets}
-          badge="100% Online"
-          badgeVariant="success"
-        />
-
-        <MetricCard
-          title="High-Risk Drains"
-          value={highRiskCount}
-          subtitle="Score ≥ 60 (High or Critical)"
-          icon={ShieldAlert}
-          badge={highRiskCount > 0 ? `${highRiskCount} Urgent` : 'Nominal'}
-          badgeVariant={highRiskCount > 0 ? 'danger' : 'neutral'}
-        />
-
-        <MetricCard
-          title="Open Inspections"
-          value={openInspections}
-          subtitle="Reported, assigned or in-repair"
-          icon={ClipboardList}
-          badge={`${openInspections} Active`}
-          badgeVariant="warning"
-          onClick={onNavigateToInspections}
-        />
-
-        <MetricCard
-          title="Awaiting Verification"
-          value={awaitingVerification}
-          subtitle="Desilting complete; pending audit"
-          icon={CheckCircle2}
-          badge={awaitingVerification > 0 ? `${awaitingVerification} Ready` : '0'}
-          badgeVariant={awaitingVerification > 0 ? 'warning' : 'neutral'}
-        />
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Hero Viewport Spacer — reveals the persistent 3D world and iframe hero stage */}
+      <div className="w-full h-[calc(100vh-140px)] min-h-[560px] max-h-[820px] flex flex-col justify-end items-center pb-8 pointer-events-none">
+        <button
+          type="button"
+          onClick={() => {
+            const el = document.getElementById('telemetry-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="pointer-events-auto group px-5 py-2.5 rounded-full bg-[#1b1e18]/70 hover:bg-[#1b1e18]/90 border border-white/15 hover:border-[#86efac]/40 text-xs tracking-wider uppercase font-mono text-[#d5dbc9] hover:text-[#86efac] transition-all duration-300 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.35)] flex items-center gap-2.5 cursor-pointer"
+        >
+          <span>Explore Catchment Telemetry</span>
+          <span className="text-[#86efac] group-hover:translate-y-0.5 transition-transform duration-300">↓</span>
+        </button>
       </div>
 
-      {/* Main Grid: Interactive Map & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 flex flex-col">
-          <div className="mb-2 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 tracking-tight">
-                Mumbai Metropolitan Catchment GIS Map
-              </h2>
-              <span className="text-xs text-slate-500">
-                Click pins to inspect sump telemetry & transition workflow states
+      {/* Operational Catchment Telemetry Section */}
+      <div id="telemetry-section" className="space-y-8 pt-2">
+        {/* Monsoon Inundation Advisory Banner */}
+        {currentWeather.id !== 'dry' && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-[#383b34]/95 via-[#2d3029]/95 to-[#242720]/95 border border-[#86efac]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-[0_0_24px_rgba(74,222,128,0.12)]">
+            <div className="flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-[#86efac] shadow-[0_0_8px_#86efac] animate-pulse" />
+              <span className="font-mono text-[11px] tracking-wider uppercase text-[#86efac] font-semibold">
+                MONSOON INUNDATION ADVISORY
               </span>
+              <span className="text-[#d5dbc9] font-light hidden md:inline">
+                &bull; Runoff surcharge risk elevated across Mumbai lowlands (Hindmata, Milan Subway, Kurla, Dharavi).
+              </span>
+            </div>
+            <span className="font-mono text-xs text-[#86efac] font-semibold">
+              {currentWeather.rainfallRateMmH} mm/h Live Inflow Rate
+            </span>
+          </div>
+        )}
+
+        {/* 4 Metric Cards in Sylva Living Green Styling */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <MetricCard
+            title="Monitored Watercourses"
+            value={totalMonitored}
+            subtitle="25 urban nullahs, creeks, and coastal outfalls"
+            icon={Droplets}
+            badge="100% Online"
+            badgeVariant="success"
+          />
+
+          <MetricCard
+            title="Vulnerable Choke Points"
+            value={highRiskCount}
+            subtitle="Channels requiring active attention"
+            icon={ShieldAlert}
+            badge={highRiskCount > 0 ? `${highRiskCount} Urgent` : 'Nominal'}
+            badgeVariant={highRiskCount > 0 ? 'danger' : 'neutral'}
+          />
+
+          <MetricCard
+            title="Field Stewardship Orders"
+            value={openInspections}
+            subtitle="Active desilting and channel clearing"
+            icon={ClipboardList}
+            badge={`${openInspections} Active`}
+            badgeVariant="warning"
+            onClick={onNavigateToInspections}
+          />
+
+          <MetricCard
+            title="Awaiting Verification"
+            value={awaitingVerification}
+            subtitle="Channel cleared; awaiting visual proof"
+            icon={CheckCircle2}
+            badge={awaitingVerification > 0 ? `${awaitingVerification} Ready` : '0'}
+            badgeVariant={awaitingVerification > 0 ? 'warning' : 'neutral'}
+          />
+        </div>
+
+        {/* Main Grid: Interactive GIS Map & System Activity Feed */}
+        <div id="gis-map-section" className="space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#86efac] shadow-[0_0_8px_#86efac]" />
+              <h2 className="text-xs uppercase font-mono tracking-wider text-[#d5dbc9] font-medium">
+                Mumbai Catchment Observatories & Flow Map
+              </h2>
             </div>
             <button
               onClick={onOpenReportModal}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-800 flex items-center gap-1"
+              className="text-xs font-medium text-[#86efac] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
             >
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span>Report Blockage</span>
+              <span>+ Share Observation</span>
             </button>
           </div>
-          <DrainMap
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <DrainMap
+                drains={drains}
+                selectedDrain={selectedDrain}
+                onSelectDrain={onSelectDrain}
+                className="h-[480px]"
+              />
+            </div>
+
+            {/* Activity Feed */}
+            <div className="lg:col-span-1">
+              <RecentActivity
+                activities={activities}
+                onSelectDrainId={(id) => {
+                  const target = drains.find((d) => d.id === id);
+                  if (target) onSelectDrain(target);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Prioritised Inspection Queue Table */}
+        <div>
+          <InspectionQueue
             drains={drains}
-            selectedDrain={selectedDrain}
             onSelectDrain={onSelectDrain}
-            className="h-[440px]"
+            selectedDrainId={selectedDrain?.id}
+            onOpenReportModal={onOpenReportModal}
           />
         </div>
-
-        {/* Activity Feed */}
-        <div className="lg:col-span-1">
-          <RecentActivity
-            activities={activities}
-            onSelectDrainId={(id) => {
-              const target = drains.find((d) => d.id === id);
-              if (target) onSelectDrain(target);
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Prioritised Inspection Queue Table */}
-      <div>
-        <InspectionQueue
-          drains={drains}
-          onSelectDrain={onSelectDrain}
-          selectedDrainId={selectedDrain?.id}
-          onOpenReportModal={onOpenReportModal}
-        />
       </div>
     </div>
   );

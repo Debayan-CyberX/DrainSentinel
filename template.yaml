@@ -1,0 +1,226 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  DrainSentinel: AI-Assisted Storm-Drain Intelligence Platform.
+  Serverless backend running FastAPI on AWS Lambda, API Gateway HTTP API,
+  DynamoDB on-demand storage, private S3 photo repository, and SNS alerts.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues:
+      - production
+      - staging
+      - development
+    Description: Deployment target environment.
+
+  GeminiApiKey:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: Optional Google Gemini API key for AI Incident Intelligence. Leave empty for deterministic fallback.
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.11
+    Architectures:
+      - x86_64
+    Tracing: Active
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        STORAGE_BACKEND: dynamodb
+        AWS_REGION_NAME: !Ref AWS::Region
+        DYNAMODB_TABLE_DRAINS: !Ref DrainsTable
+        DYNAMODB_TABLE_REPORTS: !Ref ReportsTable
+        DYNAMODB_TABLE_TASKS: !Ref TasksTable
+        DYNAMODB_TABLE_AUDIT: !Ref AuditTable
+        S3_PHOTO_BUCKET: !Ref PhotoStorageBucket
+        SNS_ALERT_TOPIC_ARN: !Ref AlertsTopic
+        GEMINI_API_KEY: !Ref GeminiApiKey
+        AI_MODEL: gemini-2.5-flash
+
+Resources:
+  # ============================================================================
+  # Amazon API Gateway (HTTP API v2)
+  # ============================================================================
+  HttpApiGateway:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: "$default"
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+          - X-Requested-With
+          - Accept
+        AllowMethods:
+          - GET
+          - POST
+          - PATCH
+          - PUT
+          - DELETE
+          - OPTIONS
+        MaxAge: 300
+
+  # ============================================================================
+  # AWS Lambda Function (FastAPI via Mangum)
+  # ============================================================================
+  DrainSentinelFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: app.main.handler
+      Description: Core DrainSentinel REST API backend running on FastAPI
+      Policies:
+        # Granular IAM Least-Privilege Policies
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DrainsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ReportsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AuditTable
+        - S3CrudPolicy:
+            BucketName: !Ref PhotoStorageBucket
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt AlertsTopic.TopicName
+      Events:
+        ProxyApiRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApiGateway
+            Path: /
+            Method: GET
+        ProxyApiCatchAll:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApiGateway
+            Path: /{proxy+}
+            Method: ANY
+
+  # ============================================================================
+  # Amazon DynamoDB Tables (On-Demand, Encrypted)
+  # ============================================================================
+  DrainsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "DrainSentinel-Drains-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  ReportsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "DrainSentinel-Reports-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+
+  TasksTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "DrainSentinel-Tasks-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+
+  AuditTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "DrainSentinel-Audit-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+
+  # ============================================================================
+  # Amazon S3 Bucket (Private Photo Storage)
+  # ============================================================================
+  PhotoStorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "drainsentinel-photos-${AWS::AccountId}-${AWS::Region}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+              - PUT
+            AllowedOrigins:
+              - "*"
+            MaxAge: 3600
+
+  # ============================================================================
+  # Amazon SNS Topic (Alerts & Emergency Dispatch Notifications)
+  # ============================================================================
+  AlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "DrainSentinel-Alerts-${Environment}"
+      DisplayName: DrainSentinel Civic Waterlogging Alerts
+
+Outputs:
+  ApiUrl:
+    Description: Direct HTTP API Gateway URL for DrainSentinel backend
+    Value: !Sub "https://${HttpApiGateway}.execute-api.${AWS::Region}.amazonaws.com"
+    Export:
+      Name: DrainSentinelApiUrl
+
+  FunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt DrainSentinelFunction.Arn
+
+  DrainsTableName:
+    Description: DynamoDB Drains Table Name
+    Value: !Ref DrainsTable
+
+  PhotoBucketName:
+    Description: Private S3 Bucket Name
+    Value: !Ref PhotoStorageBucket
+
+  SnsTopicArn:
+    Description: SNS Alerts Topic ARN
+    Value: !Ref AlertsTopic

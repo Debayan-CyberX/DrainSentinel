@@ -17,72 +17,72 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   > = {
     reported: {
       label: 'Reported',
-      bg: 'bg-rose-50',
-      text: 'text-rose-700',
-      border: 'border-rose-200',
+      bg: 'bg-rose-500/15',
+      text: 'text-rose-300',
+      border: 'border-rose-500/30',
     },
     risk_assessed: {
       label: 'Risk Assessed',
-      bg: 'bg-orange-50',
-      text: 'text-orange-700',
-      border: 'border-orange-200',
+      bg: 'bg-amber-500/15',
+      text: 'text-amber-300',
+      border: 'border-amber-500/30',
     },
     assigned: {
       label: 'Assigned',
-      bg: 'bg-blue-50',
-      text: 'text-blue-700',
-      border: 'border-blue-200',
+      bg: 'bg-sky-500/15',
+      text: 'text-sky-300',
+      border: 'border-sky-500/30',
     },
     inspected: {
       label: 'Inspected',
-      bg: 'bg-indigo-50',
-      text: 'text-indigo-700',
-      border: 'border-indigo-200',
+      bg: 'bg-cyan-500/15',
+      text: 'text-cyan-300',
+      border: 'border-cyan-500/30',
     },
     repair_in_progress: {
-      label: 'Repair in Progress',
-      bg: 'bg-amber-50',
-      text: 'text-amber-800',
-      border: 'border-amber-200',
+      label: 'Repairing',
+      bg: 'bg-amber-500/15',
+      text: 'text-amber-300',
+      border: 'border-amber-500/30',
     },
     in_progress: {
       label: 'In Progress',
-      bg: 'bg-amber-50',
-      text: 'text-amber-800',
-      border: 'border-amber-200',
+      bg: 'bg-amber-500/15',
+      text: 'text-amber-300',
+      border: 'border-amber-500/30',
     },
     resolved: {
       label: 'Resolved',
-      bg: 'bg-teal-50',
-      text: 'text-teal-700',
-      border: 'border-teal-200',
+      bg: 'bg-teal-500/15',
+      text: 'text-teal-300',
+      border: 'border-teal-500/30',
     },
     verified: {
       label: 'Verified',
-      bg: 'bg-emerald-50',
-      text: 'text-emerald-700',
-      border: 'border-emerald-200',
+      bg: 'bg-emerald-500/15',
+      text: 'text-emerald-300',
+      border: 'border-emerald-500/30',
     },
     operational: {
-      label: 'Operational',
-      bg: 'bg-slate-100',
-      text: 'text-slate-700',
-      border: 'border-slate-200',
+      label: 'Clear Flow',
+      bg: 'bg-slate-800/80',
+      text: 'text-slate-300',
+      border: 'border-slate-700/80',
     },
   };
 
   const current = config[norm] || {
     label: status,
-    bg: 'bg-slate-100',
-    text: 'text-slate-700',
-    border: 'border-slate-200',
+    bg: 'bg-slate-800/80',
+    text: 'text-slate-300',
+    border: 'border-slate-700/80',
   };
 
-  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-2.5 py-1 text-xs';
+  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-xs';
 
   return (
     <span
-      className={`inline-flex items-center font-medium rounded-md border ${current.bg} ${current.text} ${current.border} ${sizeClasses}`}
+      className={`inline-flex items-center font-medium rounded-full border ${current.bg} ${current.text} ${current.border} ${sizeClasses}`}
     >
       {current.label}
     </span>

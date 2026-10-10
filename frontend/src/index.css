@@ -4,11 +4,32 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Lexend';
+  src: url('/landing-pages/inner-green-assets/lexend-latin.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color-scheme: light;
+  --color-moss-root: #2d3029;
+  --color-moss-dark: #383b34;
+  --color-moss-hero: #4a4d44;
+  --color-pale-cream: #eef3e7;
+  --color-pale-lichen: #e8eed6;
+  --color-emerald-light: #86efac;
+  --color-emerald: #4ade80;
+  --color-card-light: #f2f3ef;
+  --color-card-ink: #23261f;
+  --color-card-label: #7c8177;
+  
+  font-family: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
@@ -16,8 +37,13 @@ body {
   display: flex;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--color-moss-root);
+  color: #eef3e7;
+  font-family: 'Lexend', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 #root {
@@ -25,9 +51,73 @@ body {
   height: 100%;
 }
 
-/* Leaflet map custom styles */
+::selection {
+  background: rgba(74, 222, 128, 0.35);
+  color: #ffffff;
+}
+
+/* Sylva Living Green Glass Card */
+.nature-card {
+  background: rgba(45, 52, 42, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(238, 243, 231, 0.12);
+  box-shadow: 0 12px 36px -10px rgba(18, 24, 18, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nature-card:hover {
+  border-color: rgba(134, 239, 172, 0.28);
+  box-shadow: 0 16px 44px -8px rgba(34, 197, 94, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* Sylva Light Botanical Card (authored style from inner-green-3d) */
+.nature-card-light {
+  background: #f2f3ef;
+  color: #23261f;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 14px 40px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Floating Dock Capsule */
+.dock-capsule {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 42%),
+    rgba(38, 48, 39, 0.76);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 10px 30px rgba(16, 22, 17, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+
+/* Liquid Metal Button */
+.pill-button {
+  background: linear-gradient(180deg, rgba(238, 243, 231, 0.95), rgba(213, 219, 201, 0.88));
+  color: #23261f;
+  font-family: 'Lexend', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.25s ease;
+}
+
+.pill-button:hover {
+  background: #ffffff;
+  box-shadow: 0 8px 26px rgba(134, 239, 172, 0.35), inset 0 1px 0 #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Slide progress bar */
+@keyframes progress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* Leaflet Map Sylva Theme */
 .leaflet-container {
-  font-family: inherit;
+  font-family: 'Lexend', sans-serif;
+  background: #2d3029 !important;
   z-index: 1;
 }
 
@@ -39,17 +129,38 @@ body {
 
 .drain-popup .leaflet-popup-content-wrapper {
   padding: 0;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: rgba(38, 45, 36, 0.96) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(134, 239, 172, 0.25);
+  color: #eef3e7;
 }
 
 .drain-popup .leaflet-popup-content {
-  margin: 0.75rem;
-  line-height: 1.4;
+  margin: 0.85rem;
+  line-height: 1.45;
+  color: #eef3e7;
 }
 
 .drain-popup .leaflet-popup-tip {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: rgba(38, 45, 36, 0.96);
+  border: 1px solid rgba(134, 239, 172, 0.25);
+}
+
+/* Botanical Moss Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #2d3029;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(134, 239, 172, 0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(134, 239, 172, 0.45);
 }

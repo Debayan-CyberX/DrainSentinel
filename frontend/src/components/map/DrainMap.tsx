@@ -5,7 +5,7 @@ import { Drain, RiskCategory } from '../../types';
 import { RiskBadge } from '../common/RiskBadge';
 import { StatusBadge } from '../common/StatusBadge';
 import { MapLegend } from './MapLegend';
-import { MapPin, ArrowRight } from 'lucide-react';
+import { ArrowRight, Layers, Droplets } from 'lucide-react';
 
 interface DrainMapProps {
   drains: Drain[];
@@ -25,32 +25,48 @@ const MapFlyTo: React.FC<{ target: [number, number] | null }> = ({ target }) => 
   return null;
 };
 
-// Create custom SVG markers for clean, crisp rendering
+// Create custom glowing botanical water droplet markers
 const createCustomMarker = (category: RiskCategory | string = 'low', isSelected: boolean) => {
   const norm = category.toString().toLowerCase();
 
-  const colors: Record<string, { fill: string; stroke: string }> = {
-    low: { fill: '#10b981', stroke: '#065f46' },
-    medium: { fill: '#f59e0b', stroke: '#92400e' },
-    moderate: { fill: '#f59e0b', stroke: '#92400e' },
-    high: { fill: '#f97316', stroke: '#9a3412' },
-    critical: { fill: '#f43f5e', stroke: '#881337' },
+  const colors: Record<string, { fill: string; stroke: string; glow: string }> = {
+    low: { fill: '#4ade80', stroke: '#15803d', glow: 'rgba(74, 222, 128, 0.4)' },
+    medium: { fill: '#86efac', stroke: '#16a34a', glow: 'rgba(134, 239, 172, 0.5)' },
+    moderate: { fill: '#86efac', stroke: '#16a34a', glow: 'rgba(134, 239, 172, 0.5)' },
+    high: { fill: '#fbbf24', stroke: '#b45309', glow: 'rgba(251, 191, 36, 0.6)' },
+    critical: { fill: '#f87171', stroke: '#b91c1c', glow: 'rgba(248, 113, 113, 0.8)' },
   };
 
   const c = colors[norm] || colors.low;
-  const size = isSelected ? 34 : 26;
+  const isCritical = norm === 'critical';
+  const size = isSelected ? 38 : isCritical ? 32 : 26;
 
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="${size}" height="${size}">
+      <defs>
+        <filter id="glow-${norm}" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
       ${
         isSelected
-          ? `<circle cx="12" cy="12" r="11" fill="none" stroke="${c.fill}" stroke-width="2" stroke-opacity="0.8" />`
+          ? `<circle cx="16" cy="16" r="14" fill="none" stroke="${c.fill}" stroke-width="2" stroke-dasharray="3 3">
+               <animateTransform attributeName="transform" type="rotate" from="0 16 16" to="360 16 16" dur="6s" repeatCount="indefinite" />
+             </circle>`
           : ''
       }
-      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="${
-        c.fill
-      }" stroke="#ffffff" stroke-width="1.5" />
-      <circle cx="12" cy="9" r="2.8" fill="#ffffff" />
+      ${
+        isCritical
+          ? `<circle cx="16" cy="16" r="11" fill="none" stroke="#f87171" stroke-width="1.5" opacity="0.8">
+               <animate attributeName="r" values="9;15;9" dur="1.8s" repeatCount="indefinite" />
+               <animate attributeName="opacity" values="0.9;0.1;0.9" dur="1.8s" repeatCount="indefinite" />
+             </circle>`
+          : ''
+      }
+      <!-- Botanical Water Droplet Pin Shape -->
+      <path d="M16 3C11 10 7 15.5 7 20a9 9 0 0 0 18 0c0-4.5-4-10-9-17z" fill="${c.fill}" stroke="#2d3029" stroke-width="1.5" filter="drop-shadow(0 2px 6px ${c.glow})" />
+      <circle cx="16" cy="19" r="3.5" fill="#ffffff" />
     </svg>
   `;
 
@@ -82,23 +98,25 @@ export const DrainMap: React.FC<DrainMapProps> = ({
     : null;
 
   return (
-    <div className={`relative rounded-xl overflow-hidden border border-slate-200/90 shadow-sm ${className}`}>
+    <div className={`relative rounded-2xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(16,22,17,0.7)] ${className}`}>
       <MapContainer
         center={defaultCenter}
         zoom={12}
         scrollWheelZoom={true}
-        className="w-full h-full z-0"
+        className="w-full h-full z-0 bg-[#2d3029]"
       >
+        {/* CartoDB Dark Matter Tiles */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
 
         <MapFlyTo target={targetCoords} />
 
         {drains.map((drain) => {
           const isSelected = selectedDrain?.id === drain.id;
-          const icon = createCustomMarker(drain.riskCategory || 'low', isSelected);
+          const cat = drain.riskCategory || drain.risk_assessment?.category || 'Low';
+          const icon = createCustomMarker(cat, isSelected);
 
           return (
             <Marker
@@ -110,44 +128,54 @@ export const DrainMap: React.FC<DrainMapProps> = ({
               }}
             >
               <Popup className="drain-popup">
-                <div className="p-1 min-w-[220px] text-xs">
-                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-1.5 mb-2">
-                    <span className="font-mono font-bold text-slate-900">
+                <div className="p-4 min-w-[250px] text-xs space-y-3 bg-[#2d3029] text-[#eef3e7]">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                    <span className="font-mono text-xs text-white font-medium">
                       {drain.id}
                     </span>
-                    <RiskBadge category={drain.riskCategory || 'Low'} score={drain.riskScore} size="sm" />
+                    <RiskBadge category={cat} score={drain.riskScore} size="sm" />
                   </div>
 
-                  <div className="font-semibold text-slate-800 leading-snug mb-0.5">
-                    {drain.name}
-                  </div>
-                  <div className="text-[11px] text-slate-500 mb-1">
-                    {drain.location.address}
-                  </div>
-                  <div className="text-[10px] text-teal-800 font-semibold mb-2">
-                    {drain.location.ward}
+                  <div>
+                    <h4 className="font-medium text-sm text-white leading-tight">
+                      {drain.name}
+                    </h4>
+                    <p className="text-[11px] text-[#a4aca0] mt-0.5 line-clamp-2">
+                      {drain.location.address}
+                    </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-1.5 bg-slate-50 p-1.5 rounded border border-slate-100 mb-2 text-[11px]">
+                  {/* Silt Meter */}
+                  <div className="space-y-1.5 pt-1 border-t border-white/10 text-[11px]">
                     <div>
-                      <span className="text-slate-400 block text-[10px]">Silt Buildup</span>
-                      <span className="font-semibold font-mono text-slate-700">
-                        {drain.siltLevelPercent ?? drain.telemetry.silt_level_percent}%
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block text-[10px]">Conduit</span>
-                      <span className="font-semibold font-mono text-slate-700">
-                        {drain.pipe_diameter_mm} mm
-                      </span>
+                      <div className="flex justify-between font-mono text-[10px] text-[#d5dbc9] mb-1">
+                        <span>Acoustic Silt Choke</span>
+                        <span className="font-medium text-[#86efac]">
+                          {drain.siltLevelPercent ?? drain.telemetry.silt_level_percent}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-[#242720] rounded-full overflow-hidden border border-white/10">
+                        <div
+                          className={`h-full ${
+                            (drain.siltLevelPercent ?? drain.telemetry.silt_level_percent) >= 80
+                              ? 'bg-rose-500'
+                              : (drain.siltLevelPercent ?? drain.telemetry.silt_level_percent) >= 50
+                              ? 'bg-amber-400'
+                              : 'bg-emerald-400'
+                          }`}
+                          style={{
+                            width: `${drain.siltLevelPercent ?? drain.telemetry.silt_level_percent}%`,
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
                     <StatusBadge status={drain.status} size="sm" />
                     <button
                       onClick={() => onSelectDrain(drain)}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-700 hover:text-teal-900"
+                      className="text-[11px] font-medium text-[#86efac] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
                     >
                       <span>Inspect Telemetry</span>
                       <ArrowRight className="w-3 h-3" />
@@ -160,16 +188,16 @@ export const DrainMap: React.FC<DrainMapProps> = ({
         })}
       </MapContainer>
 
-      {/* Floating Legend */}
-      <div className="absolute bottom-4 left-4 z-10">
+      {/* Floating Legend in Bottom Left */}
+      <div className="absolute bottom-4 left-4 z-[400] pointer-events-auto">
         <MapLegend />
       </div>
 
-      {/* Floating Status Pill */}
-      <div className="absolute top-4 right-4 z-10 bg-white/95 backdrop-blur-sm border border-slate-200/90 rounded-lg px-3 py-1.5 shadow-sm text-xs flex items-center gap-2">
-        <MapPin className="w-3.5 h-3.5 text-teal-600" />
-        <span className="font-medium text-slate-700">
-          Mumbai Catchment &bull; {drains.length} Assets
+      {/* Ward Overlay Badge Top Right */}
+      <div className="absolute top-4 right-4 z-[400] bg-[#2d3029]/95 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-mono text-[#eef3e7] shadow-lg">
+        <Layers className="w-3.5 h-3.5 text-[#86efac]" />
+        <span className="text-[11px] text-[#d5dbc9] font-normal">
+          Active Assets: <b className="text-[#86efac]">{drains.length}</b>
         </span>
       </div>
     </div>

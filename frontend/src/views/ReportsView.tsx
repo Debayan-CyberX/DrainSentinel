@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CitizenReport, Drain } from '../types';
 import { EmptyState } from '../components/common/EmptyState';
-import { ExternalLink, AlertTriangle, Info, Camera } from 'lucide-react';
+import { ExternalLink, AlertTriangle, Info, Camera, CheckCircle2, ShieldCheck, Waves } from 'lucide-react';
 
 interface ReportsViewProps {
   reports: CitizenReport[];
@@ -25,41 +25,52 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Page Header */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="nature-card p-5 rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(16,22,17,0.6)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-base font-bold text-slate-900 tracking-tight">
-            Mumbai Citizen 311 & Field Blockage Reports
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-[#86efac] shadow-[0_0_8px_#86efac]" />
+            <span className="text-[11px] font-mono tracking-wider uppercase text-[#86efac] font-medium">
+              Community Ground Notes
+            </span>
+          </div>
+          <h1 className="text-base font-medium text-white tracking-wide">
+            Community Observations & Ground Notes
           </h1>
-          <p className="text-xs text-slate-500">
-            Citizen submissions tagged as unverified until audited. Corroborating duplicate reports auto-flagged to enhance risk confidence.
+          <p className="text-xs text-[#a4aca0] font-light mt-0.5">
+            Residents and ward stewards sharing what they see along Mumbai's roadside watercourses
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* File Report CTA */}
           <button
             onClick={onOpenReportModal}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 pill-button rounded-full text-xs font-medium cursor-pointer"
           >
-            <AlertTriangle className="w-3.5 h-3.5" />
-            <span>+ Report Blockage</span>
+            <AlertTriangle className="w-3.5 h-3.5 text-[#23261f]" />
+            <span>+ Share Observation</span>
           </button>
 
           {/* Filter buttons */}
-          <div className="flex items-center gap-1 border-l border-slate-200 pl-2">
-            {['ALL', 'unverified', 'triaged', 'duplicates'].map((f) => (
+          <div className="flex items-center gap-1 border-l border-white/10 pl-3">
+            {[
+              { id: 'ALL', label: 'All Notes' },
+              { id: 'unverified', label: 'Pending Review' },
+              { id: 'triaged', label: 'Audited' },
+              { id: 'duplicates', label: 'Corroborated' },
+            ].map(({ id, label }) => (
               <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-colors capitalize ${
-                  filter === f
-                    ? 'bg-slate-900 text-white border-slate-900'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                key={id}
+                onClick={() => setFilter(id)}
+                className={`px-3 py-1.5 text-xs font-mono rounded-full border transition-all cursor-pointer ${
+                  filter === id
+                    ? 'bg-[#eef3e7] text-[#23261f] border-white font-medium shadow-[0_2px_10px_rgba(238,243,231,0.25)]'
+                    : 'bg-white/5 text-[#d5dbc9] border-white/10 hover:border-[#86efac]/30'
                 }`}
               >
-                {f === 'ALL' ? 'All' : f}
+                {label}
               </button>
             ))}
           </div>
@@ -71,9 +82,9 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
         {filteredReports.length === 0 ? (
           <div className="md:col-span-2">
             <EmptyState
-              title="No reports match this criteria"
-              description="All incoming citizen reports have been reviewed or no duplicates recorded."
-              actionText="Show All Reports"
+              title="No observations in this category"
+              description="No citizen observations or ground notes match your current filter."
+              actionText="Show All Observations"
               onAction={() => setFilter('ALL')}
             />
           </div>
@@ -84,108 +95,79 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             return (
               <div
                 key={report.id}
-                className="bg-white p-5 rounded-xl border border-slate-200/90 shadow-2xs flex flex-col justify-between"
+                className="nature-card p-5 rounded-2xl border border-white/10 hover:border-[#86efac]/35 shadow-[0_15px_40px_rgba(16,22,17,0.5)] flex flex-col justify-between transition-all group"
               >
                 <div>
                   <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-xs text-slate-900">
-                        {report.id}
+                      <span className="font-mono font-medium text-[11px] text-[#86efac] tracking-wide uppercase">
+                        Observation &bull; {report.id}
                       </span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider bg-white/5 text-[#d5dbc9] border border-white/10">
                         {report.issue_type}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
                       {report.is_duplicate && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
-                          <Info className="w-3 h-3" />
-                          <span>Duplicate</span>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                          {report.duplicate_of ? `Corroborates ${report.duplicate_of}` : 'Corroborating Note'}
                         </span>
                       )}
-
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
-                          report.severity === 'critical'
-                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                            : report.severity === 'high'
-                            ? 'bg-orange-50 text-orange-700 border border-orange-200'
-                            : report.severity === 'medium'
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                            : 'bg-slate-100 text-slate-600'
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium uppercase ${
+                          report.status === 'unverified'
+                            ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                            : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
                         }`}
                       >
-                        {report.severity}
+                        {report.status === 'unverified' ? 'Under Review' : 'Verified Note'}
                       </span>
                     </div>
                   </div>
 
-                  <h3 className="text-xs font-bold text-slate-800 mb-0.5">
-                    {report.location.address}
-                  </h3>
-                  {report.location.ward && (
-                    <div className="text-[11px] text-teal-800 font-semibold mb-2">
-                      {report.location.ward}
-                    </div>
-                  )}
-
-                  <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                    &ldquo;{report.description}&rdquo;
+                  <p className="text-xs text-[#eef3e7] font-light leading-relaxed mt-2.5">
+                    "{report.description}"
                   </p>
 
-                  {report.photo_url && (
-                    <div className="mb-3 p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-2 text-[11px] text-slate-600">
-                      <Camera className="w-3.5 h-3.5 text-teal-600" />
-                      <span>Photo Proof Attached:</span>
-                      <a
-                        href={report.photo_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-teal-700 hover:underline truncate max-w-[200px]"
-                      >
-                        {report.photo_url}
-                      </a>
+                  <div className="mt-3 p-3 rounded-xl bg-[#242720]/80 border border-white/10 text-xs font-mono space-y-1.5">
+                    <div className="text-[#a4aca0]">
+                      Location: <span className="text-[#eef3e7]">{report.location.address}</span>
                     </div>
-                  )}
-
-                  <div className="text-[11px] text-slate-400 flex items-center justify-between pb-3 border-b border-slate-100">
-                    <span>Submitted: {new Date(report.created_at).toLocaleDateString()}</span>
-                    <span className="text-slate-600 font-medium">{report.reporter_name}</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-1 flex items-center justify-between">
-                  {linkedDrain ? (
-                    <button
-                      onClick={() => onSelectDrain(linkedDrain)}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 hover:text-teal-900"
-                    >
-                      <span>Inspect {report.drain_id}</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </button>
-                  ) : (
-                    <span className="text-[11px] text-slate-400 italic">No linked asset</span>
-                  )}
-
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={`text-[11px] font-semibold px-2 py-0.5 rounded border capitalize ${
-                        report.status === 'unverified'
-                          ? 'bg-amber-50 text-amber-800 border-amber-200'
-                          : report.status === 'triaged'
-                          ? 'bg-teal-50 text-teal-800 border-teal-200'
-                          : 'bg-slate-100 text-slate-600 border-slate-200'
-                      }`}
-                    >
-                      {report.status}
-                    </span>
-                    {report.linked_task_id && (
-                      <span className="text-[10px] font-mono text-teal-700 bg-teal-50/60 px-1.5 py-0.5 rounded border border-teal-200">
-                        {report.linked_task_id}
-                      </span>
+                    {linkedDrain && (
+                      <div className="flex items-center gap-1.5 text-[#a4aca0]">
+                        <span>Nearest Channel:</span>
+                        <button
+                          onClick={() => onSelectDrain(linkedDrain)}
+                          className="text-[#86efac] hover:underline font-medium"
+                        >
+                          {linkedDrain.name} ({linkedDrain.id})
+                        </button>
+                      </div>
                     )}
                   </div>
+
+                  {/* Photo Portal Thumbnail */}
+                  {report.photo_url && (
+                    <div className="mt-3">
+                      <div className="aspect-video w-full rounded-xl overflow-hidden border border-white/10 bg-[#242720] relative group">
+                        <img
+                          src={report.photo_url}
+                          alt="Citizen evidence photo"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm text-[10px] font-mono text-white flex items-center gap-1.5">
+                          <Camera className="w-3.5 h-3.5 text-[#86efac]" />
+                          <span>Field Evidence</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono text-[#7c8177]">
+                  <span>Shared by {report.reporter_name}</span>
+                  <span>{new Date(report.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
             );

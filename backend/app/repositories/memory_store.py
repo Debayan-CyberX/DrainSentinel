@@ -6,10 +6,10 @@ from app.models.report import IncidentReportResponse, IncidentReportCreate
 from app.models.task import InspectionTaskResponse, InspectionTaskCreate, InspectionTaskUpdate, VALID_TRANSITIONS, TaskStatus
 from app.models.risk import RiskAssessment
 from app.services.risk_engine import calculate_risk
-from app.repositories.base import IDrainRepository, IReportRepository, ITaskRepository
+from app.repositories.base import IDrainRepository, IReportRepository, ITaskRepository, IAuditRepository
 
 
-class MemoryDataStore(IDrainRepository, IReportRepository, ITaskRepository):
+class MemoryDataStore(IDrainRepository, IReportRepository, ITaskRepository, IAuditRepository):
     """
     Thread-safe in-memory data store for Mumbai storm-drain network.
     Designed with a modular interface for immediate drop-in replacement
@@ -21,6 +21,7 @@ class MemoryDataStore(IDrainRepository, IReportRepository, ITaskRepository):
         self._drains: Dict[str, Drain] = {}
         self._reports: Dict[str, IncidentReportResponse] = {}
         self._tasks: Dict[str, InspectionTaskResponse] = {}
+        self._audit_logs: List[dict] = []
         self._seed_mumbai_data()
 
     def _seed_mumbai_data(self):
@@ -812,6 +813,27 @@ class MemoryDataStore(IDrainRepository, IReportRepository, ITaskRepository):
                 self._drains[drain.id] = drain
 
             return updated
+
+    # IAuditRepository implementation
+    def record_audit(self, entity_type: str, entity_id: str, action: str, details: dict, actor: str = "operator") -> None:
+        with self._lock:
+            log_entry = {
+                "id": f"AUD-{len(self._audit_logs) + 1:04d}",
+                "entity_type": entity_type,
+                "entity_id": entity_id,
+                "action": action,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "actor": actor,
+                "details": details,
+            }
+            self._audit_logs.append(log_entry)
+
+    def list_audit_logs(self, entity_id: Optional[str] = None, limit: int = 50) -> List[dict]:
+        with self._lock:
+            logs = self._audit_logs
+            if entity_id:
+                logs = [l for l in logs if l.get("entity_id") == entity_id]
+            return sorted(logs, key=lambda l: l["timestamp"], reverse=True)[:limit]
 
 
 # Global singleton instance for memory persistence during process lifetime

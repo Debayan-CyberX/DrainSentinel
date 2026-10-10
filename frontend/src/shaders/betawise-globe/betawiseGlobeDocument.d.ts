@@ -1,0 +1,1 @@
+export declare function buildBetawiseGlobeDocument(...args: any[]): any;

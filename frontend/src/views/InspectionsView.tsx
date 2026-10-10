@@ -3,7 +3,7 @@ import { Drain, InspectionTask } from '../types';
 import { RiskBadge } from '../components/common/RiskBadge';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { EmptyState } from '../components/common/EmptyState';
-import { Search, UserCheck } from 'lucide-react';
+import { Search, UserCheck, Clock, ArrowRight, ShieldAlert, Waves } from 'lucide-react';
 
 interface InspectionsViewProps {
   tasks: InspectionTask[];
@@ -57,58 +57,64 @@ export const InspectionsView: React.FC<InspectionsViewProps> = ({
   }, [tasks, searchQuery, activeTab]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Page Header */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="nature-card p-5 rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(16,22,17,0.6)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-base font-bold text-slate-900 tracking-tight">
-            BMC Stormwater Work Order & Inspection Queue
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-[#86efac] shadow-[0_0_8px_#86efac]" />
+            <span className="text-[11px] font-mono tracking-wider uppercase text-[#86efac] font-medium">
+              Field Stewardship & Care Orders
+            </span>
+          </div>
+          <h1 className="text-base font-medium text-white tracking-wide">
+            Catchment Stewardship & Field Dispatches
           </h1>
-          <p className="text-xs text-slate-500">
-            Triage lifecycle: Reported &rarr; Risk Assessed &rarr; Assigned &rarr; Inspected &rarr; Repair in Progress &rarr; Resolved &rarr; Verified
+          <p className="text-xs text-[#a4aca0] font-light mt-0.5">
+            Tending to the culverts, channels, and bio-swales across Mumbai wards before the monsoon breaks
           </p>
         </div>
 
         {/* Search */}
-        <div className="relative min-w-[260px]">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <div className="relative min-w-[280px]">
+          <Search className="w-3.5 h-3.5 text-[#a4aca0] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search task ID, drain, or crew..."
+            placeholder="Search by care order, channel, or crew..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 text-xs pl-8 pr-3 py-1.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-teal-500 placeholder-slate-400"
+            className="w-full bg-[#242720] border border-white/10 text-[#eef3e7] text-xs pl-8 pr-3 py-2 rounded-full focus:outline-none focus:border-[#86efac]/50 placeholder-[#7c8177] font-light"
           />
         </div>
       </div>
 
       {/* Workflow Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
+      <div className="flex flex-wrap gap-2 border-b border-white/10 pb-3">
         {[
-          { id: 'ALL', label: 'All Tasks', count: counts.all },
+          { id: 'ALL', label: 'All Dispatches', count: counts.all },
           { id: 'Reported', label: 'Reported', count: counts.reported },
-          { id: 'Risk Assessed', label: 'Risk Assessed', count: counts.risk_assessed },
+          { id: 'Risk Assessed', label: 'Assessed', count: counts.risk_assessed },
           { id: 'Assigned', label: 'Assigned', count: counts.assigned },
           { id: 'Inspected', label: 'Inspected', count: counts.inspected },
-          { id: 'Repair in Progress', label: 'In Repair', count: counts.repair },
+          { id: 'Repair in Progress', label: 'Restoration', count: counts.repair },
           { id: 'Resolved', label: 'Resolved', count: counts.resolved },
           { id: 'Verified', label: 'Verified', count: counts.verified },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 ${
+            className={`px-3.5 py-1.5 text-xs font-mono rounded-full transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === tab.id
-                ? 'bg-slate-900 text-white shadow-2xs'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                ? 'bg-[#eef3e7] text-[#23261f] border border-white font-medium shadow-[0_2px_10px_rgba(238,243,231,0.25)]'
+                : 'bg-white/5 text-[#d5dbc9] border border-white/10 hover:border-[#86efac]/30'
             }`}
           >
             <span>{tab.label}</span>
             <span
-              className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
                 activeTab === tab.id
-                  ? 'bg-slate-800 text-teal-300'
-                  : 'bg-slate-100 text-slate-600'
+                  ? 'bg-[#23261f] text-[#eef3e7]'
+                  : 'bg-white/10 text-[#a4aca0]'
               }`}
             >
               {tab.count}
@@ -117,90 +123,94 @@ export const InspectionsView: React.FC<InspectionsViewProps> = ({
         ))}
       </div>
 
-      {/* Tasks Table */}
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden">
+      {/* Tasks Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredTasks.length === 0 ? (
-          <EmptyState
-            title="No tasks in this lifecycle state"
-            description="All work orders in this phase have progressed through the workflow."
-            actionText="View All Tasks"
-            onAction={() => setActiveTab('ALL')}
-          />
+          <div className="col-span-full">
+            <EmptyState
+              title="No field dispatches in this stage"
+              description="All watercourses in this category are currently flowing free or have not yet required maintenance."
+              actionText="View All Dispatches"
+              onAction={() => setActiveTab('ALL')}
+            />
+          </div>
         ) : (
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/80 text-slate-500 border-b border-slate-200 text-[11px] uppercase tracking-wider font-medium select-none">
-              <tr>
-                <th className="py-2.5 px-4">Task ID</th>
-                <th className="py-2.5 px-4">Drain ID & Asset</th>
-                <th className="py-2.5 px-4">Priority & Score</th>
-                <th className="py-2.5 px-4">Issue Description</th>
-                <th className="py-2.5 px-4">Assigned Crew</th>
-                <th className="py-2.5 px-4">Workflow Status</th>
-                <th className="py-2.5 px-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredTasks.map((task) => {
-                const linkedDrain = drains.find((d) => d.id === task.drain_id);
-                return (
-                  <tr
-                    key={task.id}
-                    onClick={() => {
-                      if (linkedDrain) onSelectDrain(linkedDrain);
-                    }}
-                    className="hover:bg-slate-50/80 cursor-pointer transition-colors"
-                  >
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                      {task.id}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="font-semibold text-slate-800 font-mono">
-                        {task.drain_id}
-                      </div>
-                      <div className="text-[11px] text-slate-500 line-clamp-1">
-                        {task.title}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <RiskBadge category={task.risk_category} score={task.risk_score} size="sm" />
-                        <span className="text-[11px] font-mono text-slate-500">
-                          {task.priority}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 max-w-xs text-slate-600">
-                      <span className="line-clamp-1">{task.issue_description}</span>
-                    </td>
-                    <td className="py-3 px-4 text-slate-600">
-                      {task.assigned_crew && task.assigned_crew !== 'Unassigned' ? (
-                        <span className="inline-flex items-center gap-1.5 font-medium text-slate-800">
-                          <UserCheck className="w-3.5 h-3.5 text-blue-600" />
-                          <span>{task.assigned_crew}</span>
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 italic">Unassigned</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      <StatusBadge status={task.status} size="sm" />
-                    </td>
-                    <td className="py-3 px-3 text-right whitespace-nowrap">
+          filteredTasks.map((task) => {
+            const drain = drains.find((d) => d.id === task.drain_id);
+            const isHighPriority = task.priority.includes('Critical') || task.priority.includes('P1');
+
+            return (
+              <div
+                key={task.id}
+                className="nature-card p-5 rounded-2xl border border-white/10 hover:border-[#86efac]/35 shadow-[0_15px_40px_rgba(16,22,17,0.5)] flex flex-col justify-between transition-all group"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-mono text-[11px] font-medium text-[#86efac] tracking-wide uppercase">
+                      Care Order &bull; {task.id}
+                    </span>
+                    <StatusBadge status={task.status} size="sm" />
+                  </div>
+
+                  <h3 className="text-sm font-medium text-white leading-snug line-clamp-1 group-hover:text-[#86efac] transition-colors">
+                    {task.title}
+                  </h3>
+
+                  <p className="text-xs text-[#a4aca0] font-light mt-1.5 line-clamp-2 leading-relaxed">
+                    {task.issue_description}
+                  </p>
+
+                  <div className="mt-3.5 pt-3 border-t border-white/10 space-y-2 text-xs font-mono">
+                    <div className="flex items-center justify-between text-[#d5dbc9]">
+                      <span className="text-[#a4aca0]">Watercourse:</span>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (linkedDrain) onSelectDrain(linkedDrain);
-                        }}
-                        className="px-2.5 py-1 text-[11px] font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-md transition-colors"
+                        onClick={() => drain && onSelectDrain(drain)}
+                        className="text-[#86efac] hover:underline font-medium truncate max-w-[180px] text-right"
                       >
-                        Inspect & Transition
+                        {drain ? drain.name : task.drain_id}
                       </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[#a4aca0]">
+                      <span>Urgency:</span>
+                      <span
+                        className={`font-medium ${
+                          isHighPriority ? 'text-rose-400' : 'text-amber-400'
+                        }`}
+                      >
+                        {task.priority}
+                      </span>
+                    </div>
+
+                    {task.assigned_crew && (
+                      <div className="flex items-center justify-between text-[#a4aca0]">
+                        <span>Assigned Crew:</span>
+                        <span className="text-[#eef3e7] truncate max-w-[160px]">
+                          {task.assigned_crew}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-[11px] font-mono text-[#7c8177]">
+                    {task.created_at ? new Date(task.created_at).toLocaleDateString() : 'Active'}
+                  </span>
+
+                  {drain && (
+                    <button
+                      onClick={() => onSelectDrain(drain)}
+                      className="text-xs font-medium text-[#86efac] hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <span>Open Waterway Details</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
     </div>

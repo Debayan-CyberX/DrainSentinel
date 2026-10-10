@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Server, Save, Check } from 'lucide-react';
+import { Server, Save, Check, Database, ShieldCheck, Radio, Cloud, Lock, Droplets } from 'lucide-react';
 
 interface SettingsViewProps {
   backendStatus: string;
@@ -23,46 +23,65 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ backendStatus }) => 
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl animate-in fade-in duration-500">
       {/* Header */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200/90 shadow-2xs">
-        <h1 className="text-base font-bold text-slate-900 tracking-tight">
-          Platform Configuration & Telemetry Thresholds
+      <div className="nature-card p-5 rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(16,22,17,0.6)]">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="w-2 h-2 rounded-full bg-[#86efac] shadow-[0_0_8px_#86efac]" />
+          <span className="text-[11px] font-mono tracking-wider uppercase text-[#86efac] font-medium">
+            Platform Stewardship
+          </span>
+        </div>
+        <h1 className="text-base font-medium text-white tracking-wide">
+          Thresholds of Care & Sensing Parameters
         </h1>
-        <p className="text-xs text-slate-500">
-          Calibrate Mumbai monsoon triage sensitivities, sensor calibration ranges, and dispatch routing parameters
+        <p className="text-xs text-[#a4aca0] font-light mt-0.5">
+          Calibrating sediment tolerances, water velocity baselines, and cloud storage infrastructure
         </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Sensor Thresholds */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200/90 shadow-2xs space-y-4">
-          <h2 className="text-sm font-bold text-slate-800">
-            Acoustic Silt & Hydraulic Velocity Alarms
-          </h2>
+        <div className="nature-card p-6 rounded-2xl border border-white/10 space-y-4">
+          <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+            <Radio className="w-4 h-4 text-[#86efac]" />
+            <h2 className="text-xs font-mono uppercase tracking-wider text-white font-medium">
+              Acoustic Sediment & Water Velocity Baselines
+            </h2>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">
-                Critical Silt Alarm Threshold ({siltThreshold}%)
-              </label>
+              <div className="flex justify-between items-center mb-1.5 font-mono">
+                <label className="text-[#eef3e7]">
+                  Sediment Warning Baseline
+                </label>
+                <span className="text-rose-400 font-medium">
+                  {siltThreshold}%
+                </span>
+              </div>
               <input
                 type="range"
                 min="40"
                 max="90"
                 value={siltThreshold}
                 onChange={(e) => setSiltThreshold(Number(e.target.value))}
-                className="w-full accent-teal-600"
+                className="w-full accent-[#86efac] bg-[#242720]"
               />
-              <span className="text-[11px] text-slate-500 mt-1 block">
-                Drains with silt exceeding this percentage trigger automated Priority 1 work orders.
+              <span className="text-[11px] text-[#a4aca0] mt-1.5 block font-light">
+                Waterways with acoustic sediment exceeding this threshold trigger automated field stewardship orders.
               </span>
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">
-                Stagnation Velocity Alarm ({velocityThreshold} m/s)
-              </label>
+              <div className="flex justify-between items-center mb-1.5 font-mono">
+                <label className="text-[#eef3e7]">
+                  Stagnation Velocity Baseline
+                </label>
+                <span className="text-amber-400 font-medium">
+                  {velocityThreshold} m/s
+                </span>
+              </div>
               <input
                 type="range"
                 min="0.1"
@@ -70,87 +89,84 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ backendStatus }) => 
                 step="0.05"
                 value={velocityThreshold}
                 onChange={(e) => setVelocityThreshold(Number(e.target.value))}
-                className="w-full accent-teal-600"
+                className="w-full accent-[#86efac] bg-[#242720]"
               />
-              <span className="text-[11px] text-slate-500 mt-1 block">
-                Inflow velocity dropping below this baseline indicates a downstream culvert choke.
+              <span className="text-[11px] text-[#a4aca0] mt-1.5 block font-light">
+                Inflow velocity dropping below this baseline indicates an acute downstream culvert obstruction.
               </span>
             </div>
           </div>
         </div>
 
-        {/* Municipality Profile */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200/90 shadow-2xs space-y-4">
-          <h2 className="text-sm font-bold text-slate-800">
-            Municipal Entity & Jurisdiction
-          </h2>
+        {/* AWS Cloud Architecture Telemetry */}
+        <div className="nature-card p-6 rounded-2xl border border-white/10 space-y-4">
+          <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+            <Cloud className="w-4 h-4 text-[#86efac]" />
+            <h2 className="text-xs font-mono uppercase tracking-wider text-white font-medium">
+              Cloud Infrastructure & Field Synchronisation
+            </h2>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div>
-              <label className="block font-semibold text-slate-700 mb-1">
-                Operating Municipal Department
-              </label>
-              <input
-                type="text"
-                value={departmentName}
-                onChange={(e) => setDepartmentName(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 text-xs px-3 py-2 rounded-lg text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500"
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+            <div className="p-3.5 rounded-xl bg-[#242720] border border-white/10 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] text-[#a4aca0] uppercase">API Dispatch Engine</div>
+                <div className="text-white font-medium mt-0.5">AWS Lambda (ap-south-1)</div>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                ACTIVE
+              </span>
             </div>
 
-            <div>
-              <label className="block font-semibold text-slate-700 mb-1">
-                Administrative Jurisdiction
-              </label>
-              <input
-                type="text"
-                value={jurisdiction}
-                onChange={(e) => setJurisdiction(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 text-xs px-3 py-2 rounded-lg text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500"
-              />
+            <div className="p-3.5 rounded-xl bg-[#242720] border border-white/10 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] text-[#a4aca0] uppercase">Catchment Tables</div>
+                <div className="text-white font-medium mt-0.5">4 Production Tables</div>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                SYNCHRONIZED
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#242720] border border-white/10 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] text-[#a4aca0] uppercase">Media Vault</div>
+                <div className="text-white font-medium mt-0.5">drainsentinel-photos</div>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                VAULT SECURE
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#242720] border border-white/10 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] text-[#a4aca0] uppercase">Stewardship Alerts</div>
+                <div className="text-white font-medium mt-0.5">DrainSentinel-Alerts</div>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                READY
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Backend Connectivity Status */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Server className="w-4 h-4 text-teal-600" />
-              <h2 className="text-sm font-bold text-slate-800">
-                FastAPI Microservice Communication
-              </h2>
-            </div>
-            <p className="text-xs text-slate-500 mt-1">
-              Active local endpoints: <code className="text-slate-700 font-mono">/api/v1/drains</code>, <code className="text-slate-700 font-mono">/api/v1/reports</code>, <code className="text-slate-700 font-mono">/api/v1/tasks</code>
-            </p>
-          </div>
-
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-              backendStatus === 'operational'
-                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                : 'bg-rose-50 text-rose-800 border border-rose-200'
-            }`}
-          >
-            {backendStatus === 'operational' ? 'Connected (200 OK)' : 'Offline / Reconnecting'}
-          </span>
-        </div>
-
-        {/* Save button */}
-        <div className="flex justify-end gap-3 items-center">
-          {saved && (
-            <span className="text-xs font-semibold text-emerald-700 flex items-center gap-1">
-              <Check className="w-4 h-4" />
-              <span>Threshold parameters saved</span>
-            </span>
-          )}
+        {/* Save Button */}
+        <div className="flex justify-end">
           <button
             type="submit"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-2xs transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 pill-button rounded-full text-xs font-medium cursor-pointer"
           >
-            <Save className="w-4 h-4" />
-            <span>Save Configuration</span>
+            {saved ? (
+              <>
+                <Check className="w-4 h-4 text-[#23261f]" />
+                <span>Parameters Saved</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 text-[#23261f]" />
+                <span>Save Parameters</span>
+              </>
+            )}
           </button>
         </div>
       </form>

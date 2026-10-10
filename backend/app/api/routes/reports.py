@@ -7,6 +7,7 @@ from app.models.task import InspectionTaskResponse
 from app.repositories.memory_store import store
 from app.services.duplicate import check_for_duplicate, find_closest_drain
 from app.services.risk_engine import calculate_risk
+from app.services.notifications import notification_service
 
 router = APIRouter(prefix="/reports", tags=["Incident Reports"])
 
@@ -102,6 +103,15 @@ def create_report(report_in: IncidentReportCreate) -> IncidentReportResponse:
     )
 
     created_report = store.create_report(report_record)
+
+    # Publish immediate notification for critical/high severity reports
+    if created_report.severity in ("critical", "high"):
+        notification_service.notify_critical_incident(
+            report_id=created_report.id,
+            drain_id=created_report.drain_id,
+            issue_type=created_report.issue_type,
+            address=created_report.location.address,
+        )
 
     # Recalculate risk on the affected drain
     if associated_drain_id:

@@ -1,0 +1,1 @@
+export function buildSandboxedPageDocument(...args: any[]): any { return ""; }

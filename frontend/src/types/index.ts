@@ -159,7 +159,8 @@ export type NavigationPage =
   | 'reports'
   | 'inspections'
   | 'analytics'
-  | 'settings';
+  | 'settings'
+  | 'sylva';
 
 export interface DraftRecommendation {
   priority: string;

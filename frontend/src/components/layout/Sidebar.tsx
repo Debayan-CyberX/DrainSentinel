@@ -9,6 +9,7 @@ import {
   CloudRain,
   X,
   ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 import { NavigationPage } from '../../types';
 
@@ -50,6 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badge: unreviewedReportsCount > 0 ? unreviewedReportsCount : undefined,
     },
     { id: 'analytics', label: 'Analytics', icon: BarChart2 },
+    { id: 'sylva', label: 'Living 3D World', icon: Sparkles },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 

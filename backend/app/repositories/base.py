@@ -53,3 +53,13 @@ class ITaskRepository(ABC):
     @abstractmethod
     def update_task(self, task_id: str, update_data: InspectionTaskUpdate) -> Optional[InspectionTaskResponse]:
         pass
+
+
+class IAuditRepository(ABC):
+    @abstractmethod
+    def record_audit(self, entity_type: str, entity_id: str, action: str, details: dict, actor: str = "operator") -> None:
+        pass
+
+    @abstractmethod
+    def list_audit_logs(self, entity_id: Optional[str] = None, limit: int = 50) -> List[dict]:
+        pass
