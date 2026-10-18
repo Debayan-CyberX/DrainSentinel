@@ -1,51 +1,80 @@
-# DrainSentinel 🌧️🛡️
+# DrainSentinel
 
-> **AI-Assisted Municipal Storm-Drain Intelligence Platform**  
-> Proactively identifying clogged stormwater drains, prioritizing inspection dispatches during heavy rainfall, and tracking maintenance through verified resolution.
+A map-based storm-drain inspection workflow combining risk prioritization, maintenance tasks, and a traceable path to resolution.
 
----
+**Status:** Hackathon prototype · Synthetic drain telemetry.
 
-## 📌 Project Overview
+[Portfolio case study](https://debayan-cyberx.github.io/Deb-s-Portfolio.github.io/#project-drain)
 
-DrainSentinel is an environmental engineering intelligence platform designed for municipal public works departments. Urban flooding during extreme weather events is often triggered not by overwhelming regional rainfall, but by localized storm drain obstructions (sediment accumulation, debris, trash, and silt blockages).
+## Problem and intended user
 
-DrainSentinel combines drainage network telemetry, elevation and catchment gradient heuristics, and AI prioritization scoring to rank at-risk drains before surface runoff accumulates into street-level flooding.
+Help municipal inspection teams prioritize at-risk drains and track maintenance work through a visible operational workflow.
 
----
+## My implementation
 
-## 🏗️ Architecture & Tech Stack
+I implemented the frontend, mapping, backend services, risk and inspection workflows, and deployment code. Teammates contributed research and presentations.
 
-```
-+-------------------------------------------------------------+
-|                      DrainSentinel UI                       |
-|           React (TypeScript) + Vite + Tailwind CSS          |
-|    - Geospatial Leaflet Map with risk pins                  |
-|    - Real-time Health & Telemetry Status Monitor            |
-|    - Triage & Maintenance Crew Dispatch Queue               |
-+------------------------------+------------------------------+
-                               | REST API (JSON)
-                               v
-+-------------------------------------------------------------+
-|                   FastAPI Backend Service                   |
-|                   Python 3.15 + Pydantic v2                 |
-|    - Health Monitoring (`/api/health`)                      |
-|    - Storm-Drain Network Graph & Synthetic Sensors          |
-|    - Priority Scoring Engine (Heuristic / AI Risk)          |
-+------------------------------+------------------------------+
-                               | Future Cloud Deployment
-                               v
-+-------------------------------------------------------------+
-|              AWS Serverless Architecture (Planned)          |
-|    API Gateway -> AWS Lambda (Mangum) -> Amazon DynamoDB    |
-|       S3 (Photo Resolution Storage) | SNS (Alerts)          |
-+-------------------------------------------------------------+
+## Stack and workflow
+
+React, FastAPI, Leaflet, AWS adapters.
+
+```mermaid
+flowchart LR
+  A["Map"] --> B
+  B["Prioritize"] --> C
+  C["Inspect"] --> D
+  D["Resolve"]
 ```
 
-### Stack Components
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Leaflet & React-Leaflet, Lucide React
-- **Backend**: Python 3.15, FastAPI, Uvicorn, Pydantic v2, Pytest
-- **Simulated Hydrological Data**: Clearly labelled synthetic urban catchment drain telemetry
-- **Cloud Deployment Target**: AWS Lambda (via Mangum adapter), API Gateway, DynamoDB, S3, SNS
+## Walkthrough
 
----
+1. Inspect the drain map, risk levels, and the factors behind a prioritized asset.
+2. Open a drain detail and review supporting reports and inspection context.
+3. Create and progress a maintenance task through the inspection workflow.
+4. Review resolution evidence and audit history rather than treating a risk score as a final operational decision.
+
+## Run locally
+
+Install Python and Node.js with npm, clone the repository, and run the backend from `backend`:
+
+```sh
+cd backend
+python -m venv .venv
+# Windows PowerShell: .\.venv\Scripts\Activate.ps1
+# macOS/Linux: source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+The default storage backend is in-memory; AWS credentials are not required for that mode. Optional AI and cloud services need their own configuration. See `backend/app/core/config.py` for the current setting names.
+
+In a second terminal, from `frontend`:
+
+```sh
+npm ci
+npm run dev
+```
+
+The frontend defaults to `http://127.0.0.1:8000`; set `VITE_API_URL` when using a different backend. Open the Vite URL. API health is exposed at `/api/health`, versioned routes at `/api/v1`, and OpenAPI documentation at `/docs`.
+
+```sh
+# From backend, with the virtual environment active
+python -m pytest -q
+# From frontend
+npm run build
+```
+
+Cloud adapters and deployment scripts exist in the repository. [DEPLOYMENT_AWS.md](DEPLOYMENT_AWS.md) documents the intended AWS setup; infrastructure availability must be checked separately from a local run.
+
+## Technical decision and tradeoff
+
+Use explainable risk heuristics with an optional AI layer and local/cloud storage adapters. This supports a reproducible demo; real flood-risk use requires calibrated data and operational validation.
+
+## Current limitations
+
+The demonstration uses synthetic telemetry. Scores are not validated flood forecasts. Cloud services require configuration; infrastructure code does not imply every deployment is active.
+
+## Validation scope
+
+The repository includes risk-engine, API, weather/prediction, inspection-workflow, and AWS-adapter tests. Synthetic inputs demonstrate behavior rather than field accuracy. Validation commands are provided for reproduction; this documentation update does not claim new test runs or production measurements.
 
